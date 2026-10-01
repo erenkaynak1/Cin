@@ -9,12 +9,18 @@
 </head>
 <body class="home-body">
   <main class="home-shell" aria-label="HERKES CİN GİBİ ana ekranı">
-    <img class="home-art" src="assets/home-screen.png" alt="HERKES CİN GİBİ ana ekranı">
+    <img id="homeArt" class="home-art" alt="HERKES CİN GİBİ ana ekranı">
     <button class="hotspot hotspot-disabled hotspot-distance" disabled aria-label="Mesafe ve Kilit, yakında"></button>
     <button class="hotspot hotspot-disabled hotspot-village" disabled aria-label="Köy Kurma Yardımcısı, yakında"></button>
     <a class="hotspot hotspot-simulator" href="simulator.html" aria-label="Savaş Simülatörünü aç"></a>
     <button class="hotspot hotspot-disabled hotspot-guide" disabled aria-label="Asker Rehberi, yakında"></button>
     <button class="hotspot hotspot-disabled hotspot-settings" disabled aria-label="Ayarlar, yakında"></button>
   </main>
+  <script>
+    fetch("assets/home.b64.txt")
+      .then(r => { if (!r.ok) throw new Error("asset"); return r.text(); })
+      .then(b64 => { document.getElementById("homeArt").src = "data:image/webp;base64," + b64.trim(); })
+      .catch(() => { document.getElementById("homeArt").alt = "Ana ekran görseli yüklenemedi."; });
+  </script>
 </body>
 </html>
