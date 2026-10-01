@@ -1,0 +1,75 @@
+<!doctype html>
+<html lang="tr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <meta name="theme-color" content="#07090b">
+  <title>Savaş Simülatörü · HERKES CİN GİBİ</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body class="sim-body">
+  <main class="sim-shell">
+    <header class="sim-header">
+      <a class="back-link" href="index.html" aria-label="Ana ekrana dön">‹</a>
+      <div>
+        <h1>SAVAŞ SİMÜLATÖRÜ</h1>
+        <p>Asker sayılarını gir ve savaş sonucunu gör.</p>
+      </div>
+      <span></span>
+    </header>
+
+    <section class="battle-grid">
+      <section class="side attacker">
+        <div class="side-head">
+          <strong>SALDIRAN</strong>
+          <select aria-label="Saldıran ulus">
+            <option>Göktürk</option>
+            <option disabled>Selçuk · yakında</option>
+            <option disabled>Hun · yakında</option>
+          </select>
+        </div>
+        <div class="unit-grid" id="attackerUnits"></div>
+      </section>
+
+      <section class="side defender">
+        <div class="side-head">
+          <strong>SAVUNAN</strong>
+          <select aria-label="Savunan ulus">
+            <option>Göktürk</option>
+            <option disabled>Selçuk · yakında</option>
+            <option disabled>Hun · yakında</option>
+          </select>
+        </div>
+        <div class="unit-grid" id="defenderUnits"></div>
+        <label class="wall-control">
+          <span>Sur Seviyesi</span>
+          <input id="wallLevel" type="number" min="0" max="20" step="1" value="0" inputmode="numeric">
+        </label>
+      </section>
+    </section>
+
+    <div class="simulate-panel">
+      <button id="simulateButton" class="simulate-button" type="button">⚔ SİMÜLE ET</button>
+      <p id="validationMessage" class="validation" role="status" aria-live="polite"></p>
+    </div>
+
+    <section class="results" id="results" aria-live="polite">
+      <h2>SAVAŞ SONUCU</h2>
+      <div class="winner" id="winnerText">İki tarafa da en az bir asker gir.</div>
+      <div class="result-sides">
+        <section class="result-panel result-attacker">
+          <h3>Saldıran</h3>
+          <div id="attackerResults"></div>
+        </section>
+        <section class="result-panel result-defender">
+          <h3>Savunan</h3>
+          <div id="defenderResults"></div>
+        </section>
+      </div>
+    </section>
+
+    <footer>By SPQR-Eren</footer>
+  </main>
+  <script src="app.js"></script>
+</body>
+</html>
