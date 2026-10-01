@@ -1,19 +1,20 @@
 (()=>{
 const UNITS=[
-{id:"karabudun",name:"Karabudun",attack:20,infDef:30,cavDef:15,type:"infantry",image:"assets/karabudun.png"},
-{id:"kemankes",name:"Kemankeş",attack:25,infDef:100,cavDef:30,type:"archer",image:"assets/kemankes.png"},
-{id:"tapukci",name:"Tapukçı",attack:10,infDef:20,cavDef:150,type:"infantry",image:"assets/tapukci.png"},
-{id:"mavi-kurt",name:"Mavi Kurt",attack:100,infDef:80,cavDef:40,type:"infantry",image:"assets/mavi-kurt.png"},
-{id:"muhafiz",name:"Muhafız",attack:40,infDef:140,cavDef:50,type:"cavalry",image:"assets/muhafiz.png"},
-{id:"mavi-atli",name:"Mavi Atlı",attack:110,infDef:50,cavDef:50,type:"cavalry",image:"assets/mavi-atli.png"},
-{id:"kursad",name:"Kürşad",attack:150,infDef:110,cavDef:110,type:"cavalry",image:"assets/kursad.png"},
-{id:"mancinik",name:"Mancınık",attack:90,infDef:45,cavDef:130,type:"siege",image:"assets/mancinik.png"},
-{id:"topcu",name:"Topçu",attack:160,infDef:55,cavDef:150,type:"siege",image:"assets/topcu.png"},
-{id:"casus",name:"Casus",attack:10,infDef:10,cavDef:10,type:"scout",image:"assets/casus.png"}
+{id:"karabudun",name:"Karabudun",attack:20,infDef:30,cavDef:15,type:"infantry"},
+{id:"kemankes",name:"Kemankeş",attack:25,infDef:100,cavDef:30,type:"archer"},
+{id:"tapukci",name:"Tapukçı",attack:10,infDef:20,cavDef:150,type:"infantry"},
+{id:"mavi-kurt",name:"Mavi Kurt",attack:100,infDef:80,cavDef:40,type:"infantry"},
+{id:"muhafiz",name:"Muhafız",attack:40,infDef:140,cavDef:50,type:"cavalry"},
+{id:"mavi-atli",name:"Mavi Atlı",attack:110,infDef:50,cavDef:50,type:"cavalry"},
+{id:"kursad",name:"Kürşad",attack:150,infDef:110,cavDef:110,type:"cavalry"},
+{id:"mancinik",name:"Mancınık",attack:90,infDef:45,cavDef:130,type:"siege"},
+{id:"topcu",name:"Topçu",attack:160,infDef:55,cavDef:150,type:"siege"},
+{id:"casus",name:"Casus",attack:10,infDef:10,cavDef:10,type:"scout"}
 ];
 const $=id=>document.getElementById(id),atkHost=$("attackerUnits"),defHost=$("defenderUnits");if(!atkHost||!defHost)return;
+fetch("assets/units.b64.txt").then(r=>{if(!r.ok)throw new Error("asset");return r.text()}).then(b64=>document.documentElement.style.setProperty("--unit-sprite",'url("data:image/webp;base64,'+b64.trim()+'")')).catch(()=>{});
 const clamp=(v,min=0,max=999999999)=>{const n=parseInt(String(v).replace(/[^0-9-]/g,""),10);return Number.isFinite(n)?Math.min(max,Math.max(min,n)):min};
-function card(u,side){const a=document.createElement("article");a.className="unit-card";const img=document.createElement("img");img.src=u.image;img.alt=u.name;img.loading="lazy";const n=document.createElement("div");n.className="unit-name";n.textContent=u.name;const input=document.createElement("input");input.type="number";input.min="0";input.step="1";input.value="0";input.inputMode="numeric";input.dataset.side=side;input.dataset.unit=u.id;input.setAttribute("aria-label",(side==="attacker"?"Saldıran ":"Savunan ")+u.name+" adedi");input.addEventListener("change",()=>input.value=clamp(input.value));a.append(img,n,input);return a}
+function card(u,side){const a=document.createElement("article");a.className="unit-card";const img=document.createElement("div");img.className="unit-art unit-art-"+u.id;img.setAttribute("role","img");img.setAttribute("aria-label",u.name);const n=document.createElement("div");n.className="unit-name";n.textContent=u.name;const input=document.createElement("input");input.type="number";input.min="0";input.step="1";input.value="0";input.inputMode="numeric";input.dataset.side=side;input.dataset.unit=u.id;input.setAttribute("aria-label",(side==="attacker"?"Saldıran ":"Savunan ")+u.name+" adedi");input.addEventListener("change",()=>input.value=clamp(input.value));a.append(img,n,input);return a}
 UNITS.forEach(u=>{atkHost.appendChild(card(u,"attacker"));defHost.appendChild(card(u,"defender"))});
 function army(side){const c={};let total=0;document.querySelectorAll('input[data-side="'+side+'"]').forEach(i=>{const v=clamp(i.value);i.value=v;c[i.dataset.unit]=v;total+=v});return{counts:c,total}}
 function cavRatio(a){if(!a.total)return 0;let c=0;UNITS.forEach(u=>{if(u.type==="cavalry")c+=a.counts[u.id]||0});return c/a.total}
