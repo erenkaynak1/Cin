@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
   <meta name="theme-color" content="#07090b">
   <title>Savaş Simülatörü · HERKES CİN GİBİ</title>
-  <link rel="stylesheet" href="styles.css?v=20261002-proportion1">
+  <link rel="stylesheet" href="styles.css?v=20261002-wallpicker1">
 </head>
 <body class="sim-body">
   <main class="sim-shell">
@@ -41,14 +41,22 @@
           </select>
         </div>
         <div class="unit-grid" id="defenderUnits"></div>
-        <div class="wall-control">
-          <div class="wall-control-head">
-            <span>Sur Seviyesi</span>
-            <output id="wallValue" for="wallLevel">0</output>
-          </div>
-          <input id="wallLevel" type="range" min="0" max="10" step="1" value="0" aria-label="Sur Seviyesi">
-          <div class="wall-scale" aria-hidden="true"><span>0</span><span>5</span><span>10</span></div>
-        </div>
+        <label class="wall-control" for="wallLevel">
+          <span>Sur Seviyesi</span>
+          <select id="wallLevel" aria-label="Sur Seviyesi">
+            <option value="0">0</option>
+            <option value="1">1</option>
+            <option value="2">2</option>
+            <option value="3">3</option>
+            <option value="4">4</option>
+            <option value="5">5</option>
+            <option value="6">6</option>
+            <option value="7">7</option>
+            <option value="8">8</option>
+            <option value="9">9</option>
+            <option value="10">10</option>
+          </select>
+        </label>
       </section>
     </section>
 
@@ -74,6 +82,6 @@
 
     <footer>By SPQR-Eren</footer>
   </main>
-  <script src="app-v2.js?v=20261002-proportion1"></script>
+  <script src="app-v2.js?v=20261002-wallpicker1"></script>
 </body>
 </html>
