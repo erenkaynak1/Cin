@@ -43,7 +43,8 @@ const NATIONS={
 const $=id=>document.getElementById(id);
 const atkHost=$("attackerUnits"),defHost=$("defenderUnits");
 const atkNation=$("attackerNation"),defNation=$("defenderNation");
-if(!atkHost||!defHost||!atkNation||!defNation)return;
+const wallLevel=$("wallLevel"),wallValue=$("wallValue");
+if(!atkHost||!defHost||!atkNation||!defNation||!wallLevel)return;
 
 document.documentElement.style.setProperty("--sprite-selcuk",'url("assets/selcuk-units.jpg")');
 document.documentElement.style.setProperty("--sprite-hun",'url("assets/hun-units.jpg")');
@@ -109,6 +110,14 @@ function renderUnits(side){
 
 atkNation.addEventListener("change",()=>renderUnits("attacker"));
 defNation.addEventListener("change",()=>renderUnits("defender"));
+const syncWallValue=()=>{
+  const value=clamp(wallLevel.value,0,10);
+  wallLevel.value=value;
+  if(wallValue)wallValue.textContent=String(value);
+};
+wallLevel.addEventListener("input",syncWallValue);
+wallLevel.addEventListener("change",syncWallValue);
+syncWallValue();
 
 function army(side,nation){
   const counts={};
@@ -239,8 +248,9 @@ function render(id,a,losses){
 $("simulateButton").addEventListener("click",()=>{
   const a=army("attacker",atkNation.value);
   const d=army("defender",defNation.value);
-  const wall=clamp($("wallLevel").value,0,20);
-  $("wallLevel").value=wall;
+  const wall=clamp(wallLevel.value,0,10);
+  wallLevel.value=wall;
+  if(wallValue)wallValue.textContent=String(wall);
   if(!a.total||!d.total){
     $("validationMessage").textContent="İki tarafa da en az bir asker girmen gerekiyor.";
     $("winnerText").textContent="İki tarafa da en az bir asker gir.";
