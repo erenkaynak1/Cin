@@ -121,6 +121,152 @@ function renderUnits(side){
 atkNation.addEventListener("change",()=>renderUnits("attacker"));
 defNation.addEventListener("change",()=>renderUnits("defender"));
 
+const OCR_UNIT_NAMES=[
+  {nation:"gokturk",id:"karabudun",aliases:["karabudun"]},
+  {nation:"gokturk",id:"kemankes",aliases:["kemankes","keman kes"]},
+  {nation:"gokturk",id:"tapukci",aliases:["tapukci","tapukçi","tapukcı"]},
+  {nation:"gokturk",id:"mavi-kurt",aliases:["mavi kurt"]},
+  {nation:"gokturk",id:"muhafiz",aliases:["muhafiz","muhafız"]},
+  {nation:"gokturk",id:"mavi-atli",aliases:["mavi atli","mavi atlı"]},
+  {nation:"gokturk",id:"kursad",aliases:["kursad","kürsad","kürşad","kursat"]},
+  {nation:"selcuk",id:"gulam",aliases:["gulam"]},
+  {nation:"selcuk",id:"kemankes",aliases:["kemankes","keman kes"]},
+  {nation:"selcuk",id:"selcuk",aliases:["selcuk","selçuk"]},
+  {nation:"selcuk",id:"alparslan",aliases:["alparslan","alp arslan"]},
+  {nation:"selcuk",id:"kargili",aliases:["kargili","kargılı"]},
+  {nation:"selcuk",id:"atli-okcu",aliases:["atli okcu","atlı okçu","atli okçu"]},
+  {nation:"selcuk",id:"sipahi",aliases:["sipahi"]},
+  {nation:"hun",id:"toygun",aliases:["toygun"]},
+  {nation:"hun",id:"kemankes",aliases:["kemankes","keman kes"]},
+  {nation:"hun",id:"tarik",aliases:["tarik","tarık"]},
+  {nation:"hun",id:"barlas",aliases:["barlas"]},
+  {nation:"hun",id:"tunga",aliases:["tunga"]},
+  {nation:"hun",id:"talakan",aliases:["talakan"]},
+  {nation:"hun",id:"tarkan",aliases:["tarkan"]},
+  {nation:"common",id:"mancinik",aliases:["mancinik","mancınık"]},
+  {nation:"common",id:"topcu",aliases:["topcu","topçu"]},
+  {nation:"common",id:"casus",aliases:["casus"]}
+];
+
+function normalizeOcr(text){
+  return String(text||"")
+    .toLocaleLowerCase("tr-TR")
+    .replace(/ı/g,"i").replace(/ş/g,"s").replace(/ç/g,"c")
+    .replace(/ğ/g,"g").replace(/ü/g,"u").replace(/ö/g,"o")
+    .replace(/[|]/g," ")
+    .replace(/\s+/g," ")
+    .trim();
+}
+
+function regexSafe(value){
+  const specials="\\^$.*+?()[]{}|";
+  let out="";
+  for(const ch of value) out+=specials.includes(ch)?"\\"+ch:ch;
+  return out;
+}
+
+function parseCount(raw){
+  const digits=String(raw||"").replace(/\D/g,"");
+  if(!digits)return null;
+  const value=Number(digits);
+  return Number.isFinite(value)?value:null;
+}
+
+function detectNation(text){
+  const scores={gokturk:0,selcuk:0,hun:0};
+  const norm=normalizeOcr(text);
+  OCR_UNIT_NAMES.forEach(item=>{
+    if(item.nation==="common"||item.id==="kemankes")return;
+    if(item.aliases.some(a=>norm.includes(normalizeOcr(a))))scores[item.nation]++;
+  });
+  const ranked=Object.entries(scores).sort((a,b)=>b[1]-a[1]);
+  return ranked[0][1]>0?ranked[0][0]:null;
+}
+
+function extractCountsFromText(text,nation){
+  const norm=normalizeOcr(text);
+  const spyIndex=norm.indexOf("kesfedilen birlikler");
+  const source=spyIndex>=0?norm.slice(spyIndex):norm;
+  const candidates=OCR_UNIT_NAMES.filter(x=>x.nation===nation||x.nation==="common");
+  const found={};
+
+  candidates.forEach(item=>{
+    for(const aliasRaw of item.aliases){
+      const alias=regexSafe(normalizeOcr(aliasRaw));
+      const re=new RegExp(alias+"[\\s:,-]{0,16}(?:mevcut[\\s:,-]{0,12})?([0-9][0-9., ]{0,14})","i");
+      const m=source.match(re);
+      if(m){
+        const value=parseCount(m[1]);
+        if(value!==null){
+          found[item.id]=value;
+          break;
+        }
+      }
+    }
+  });
+  return found;
+}
+
+function fillRecognized(side,nation,counts){
+  const nationSelect=side==="attacker"?atkNation:defNation;
+  nationSelect.value=nation;
+  renderUnits(side);
+  Object.entries(counts).forEach(([id,value])=>{
+    const input=document.querySelector('input[data-side="'+side+'"][data-unit="'+id+'"]');
+    if(input)input.value=String(value);
+  });
+}
+
+async function scanArmyImage(file,side){
+  const status=$(side==="attacker"?"attackerScanStatus":"defenderScanStatus");
+  if(!file)return;
+  if(!window.Tesseract){
+    status.textContent="Görsel okuyucu yüklenemedi.";
+    status.classList.add("error");
+    return;
+  }
+  status.classList.remove("error","success");
+  status.textContent="Görsel okunuyor… %0";
+
+  try{
+    const result=await window.Tesseract.recognize(file,"tur+eng",{
+      logger:m=>{
+        if(m.status==="recognizing text"&&Number.isFinite(m.progress)){
+          status.textContent="Görsel okunuyor… %"+Math.round(m.progress*100);
+        }
+      }
+    });
+    const text=result&&result.data?result.data.text||"":"";
+    const nation=detectNation(text)||(side==="attacker"?atkNation.value:defNation.value);
+    const counts=extractCountsFromText(text,nation);
+    const recognized=Object.keys(counts).length;
+
+    if(!recognized){
+      status.textContent="Asker sayısı okunamadı. Daha net/kırpılmış görsel dene.";
+      status.classList.add("error");
+      return;
+    }
+
+    fillRecognized(side,nation,counts);
+    status.textContent=recognized+" birlik otomatik dolduruldu.";
+    status.classList.add("success");
+  }catch(err){
+    status.textContent="Görsel okunurken hata oluştu.";
+    status.classList.add("error");
+  }
+}
+
+const attackerImage=$("attackerImage");
+const defenderImage=$("defenderImage");
+if(attackerImage) attackerImage.addEventListener("change",e=>{
+  scanArmyImage(e.target.files&&e.target.files[0],"attacker");
+  e.target.value="";
+});
+if(defenderImage) defenderImage.addEventListener("change",e=>{
+  scanArmyImage(e.target.files&&e.target.files[0],"defender");
+  e.target.value="";
+});
+
 function army(side,nation){
   const counts={};
   let total=0;
