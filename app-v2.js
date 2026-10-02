@@ -99,6 +99,13 @@ function card(unit,side){
   input.dataset.side=side;
   input.dataset.unit=unit.id;
   input.setAttribute("aria-label",(side==="attacker"?"Saldıran ":"Savunan ")+unit.name+" adedi");
+  input.addEventListener("focus",()=>{
+    if(input.value==="0") input.value="";
+  });
+  input.addEventListener("blur",()=>{
+    if(input.value.trim()==="") input.value="0";
+    else input.value=clamp(input.value);
+  });
   input.addEventListener("change",()=>input.value=clamp(input.value));
   a.append(art,n,input);
   return a
@@ -228,26 +235,49 @@ function render(id,a,losses){
   const active=a.units.filter(u=>(a.counts[u.id]||0)>0);
   if(!active.length){
     const e=document.createElement("div");
-    e.className="result-row empty";
+    e.className="report-empty";
     e.textContent="Asker girilmedi.";
     host.appendChild(e);
     return
   }
-  const head=document.createElement("div");
-  head.className="result-row header";
-  ["Birim","Başlangıç","Ölen","Kalan"].forEach(t=>{
-    const s=document.createElement("span");s.textContent=t;head.appendChild(s)
-  });
-  host.appendChild(head);
+
   active.forEach(u=>{
-    const start=a.counts[u.id]||0;
+    const sent=a.counts[u.id]||0;
     const dead=losses[u.id]||0;
-    const row=document.createElement("div");
-    row.className="result-row";
-    [u.name,fmt(start),fmt(dead),fmt(start-dead)].forEach(t=>{
-      const s=document.createElement("span");s.textContent=t;row.appendChild(s)
-    });
-    host.appendChild(row)
+
+    const card=document.createElement("article");
+    card.className="report-card";
+
+    const art=document.createElement("div");
+    art.className="report-art";
+    art.setAttribute("role","img");
+    art.setAttribute("aria-label",u.name);
+    const sprite=spriteStyle(u);
+    art.style.backgroundImage=sprite.image;
+    art.style.backgroundSize=sprite.size;
+    art.style.backgroundPosition=sprite.posX+" "+sprite.posY;
+    art.style.aspectRatio=u.sheet==="gokturk"?"2 / 3":"8 / 11";
+
+    const name=document.createElement("div");
+    name.className="report-name";
+    name.textContent=u.name;
+
+    const sentLine=document.createElement("div");
+    sentLine.className="report-line";
+    sentLine.append("Giden ");
+    const sentStrong=document.createElement("strong");
+    sentStrong.textContent=fmt(sent);
+    sentLine.appendChild(sentStrong);
+
+    const deadLine=document.createElement("div");
+    deadLine.className="report-line dead";
+    deadLine.append("Ölen ");
+    const deadStrong=document.createElement("strong");
+    deadStrong.textContent=fmt(dead);
+    deadLine.appendChild(deadStrong);
+
+    card.append(art,name,sentLine,deadLine);
+    host.appendChild(card);
   })
 }
 
