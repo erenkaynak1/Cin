@@ -4,85 +4,179 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
   <meta name="theme-color" content="#07090b">
-  <title>Mesafe & Varış · HERKES CİN GİBİ</title>
-  <link rel="stylesheet" href="styles.css?v=20261002-distance1">
+  <title>Mesafe & Kilit · HERKES CİN GİBİ</title>
+  <link rel="stylesheet" href="styles.css?v=20261002-lock1">
 </head>
 <body class="distance-body">
   <main class="distance-shell">
     <header class="sim-header distance-header">
       <a class="back-link" href="index.html" aria-label="Ana ekrana dön">‹</a>
       <div>
-        <h1>MESAFE & VARIŞ</h1>
-        <p>Koordinatları gir, birlik seç ve varış süresini hesapla.</p>
+        <h1>MESAFE & KİLİT</h1>
+        <p>Varış ve dönüş zamanını saniyesine kadar hesapla.</p>
       </div>
       <span></span>
     </header>
 
-    <section class="distance-card">
-      <div class="coord-block">
-        <h2>KAYNAK</h2>
-        <div class="coord-grid">
-          <label>X<input id="fromX" type="number" inputmode="numeric" placeholder="25250"></label>
-          <label>Y<input id="fromY" type="number" inputmode="numeric" placeholder="30250"></label>
-        </div>
-      </div>
-
-      <div class="coord-arrow" aria-hidden="true">↓</div>
-
-      <div class="coord-block">
-        <h2>HEDEF</h2>
-        <div class="coord-grid">
-          <label>X<input id="toX" type="number" inputmode="numeric" placeholder="26490"></label>
-          <label>Y<input id="toY" type="number" inputmode="numeric" placeholder="30084"></label>
-        </div>
-      </div>
-
-      <div class="travel-options">
-        <label class="travel-field">
-          <span>Ulus</span>
-          <select id="travelNation">
-            <option value="gokturk">Göktürk</option>
-            <option value="selcuk">Selçuk</option>
-            <option value="hun">Hun</option>
-          </select>
-        </label>
-
-        <label class="travel-field">
-          <span>Birlik</span>
-          <select id="travelUnit"></select>
-        </label>
-      </div>
-
-      <label class="diamond-option">
-        <input id="diamondTravel" type="checkbox">
-        <span class="diamond-box">💎</span>
-        <span>
-          <strong>Elmaslı Gidiş</strong>
-          <small>2× hız</small>
-        </span>
-      </label>
-
-      <button id="distanceCalculate" class="simulate-button distance-button" type="button">HESAPLA</button>
-      <p id="distanceValidation" class="validation" role="status" aria-live="polite"></p>
+    <section class="live-clock-panel" aria-live="polite">
+      <span>ANLIK SAAT</span>
+      <strong id="liveClock">--:--:--</strong>
     </section>
 
-    <section class="distance-result" id="distanceResult" aria-live="polite">
-      <div class="distance-result-head">VARIŞ TAHMİNİ</div>
-      <div class="distance-main-result">
-        <span>Süre</span>
-        <strong id="durationText">--:--:--</strong>
-      </div>
-      <div class="distance-result-grid">
-        <div><span>Mesafe</span><strong id="distanceText">—</strong></div>
-        <div><span>Hız</span><strong id="speedText">—</strong></div>
-        <div><span>Çıkış</span><strong id="departureText">—</strong></div>
-        <div><span>Varış</span><strong id="arrivalText">—</strong></div>
-      </div>
-      <p class="distance-note">Hesap, verdiğin gerçek Kemankeş örneğine göre kalibre edildi.</p>
+    <div class="distance-tabs" role="tablist" aria-label="Hesap türü">
+      <button id="arrivalTab" class="distance-tab active" type="button" role="tab" aria-selected="true">VARIŞ</button>
+      <button id="lockTab" class="distance-tab" type="button" role="tab" aria-selected="false">KİLİT</button>
+    </div>
+
+    <section id="arrivalPanel" class="distance-mode-panel">
+      <section class="distance-card">
+        <div class="coord-block">
+          <h2>KAYNAK</h2>
+          <div class="coord-grid">
+            <label>X<input id="fromX" type="number" inputmode="numeric" placeholder="25250"></label>
+            <label>Y<input id="fromY" type="number" inputmode="numeric" placeholder="30250"></label>
+          </div>
+        </div>
+
+        <div class="coord-arrow" aria-hidden="true">↓</div>
+
+        <div class="coord-block">
+          <h2>HEDEF</h2>
+          <div class="coord-grid">
+            <label>X<input id="toX" type="number" inputmode="numeric" placeholder="26490"></label>
+            <label>Y<input id="toY" type="number" inputmode="numeric" placeholder="30084"></label>
+          </div>
+        </div>
+
+        <div class="travel-options">
+          <label class="travel-field">
+            <span>Ulus</span>
+            <select id="travelNation">
+              <option value="gokturk">Göktürk</option>
+              <option value="selcuk">Selçuk</option>
+              <option value="hun">Hun</option>
+            </select>
+          </label>
+
+          <label class="travel-field">
+            <span>Birlik</span>
+            <select id="travelUnit"></select>
+          </label>
+        </div>
+        <p class="field-hint">Karışık orduda hareket hızını belirleyen en yavaş birliği seç.</p>
+
+        <label class="diamond-option">
+          <input id="diamondTravel" type="checkbox">
+          <span class="diamond-box">💎</span>
+          <span>
+            <strong>Elmaslı Gidiş</strong>
+            <small>2× hız</small>
+          </span>
+        </label>
+
+        <button id="distanceCalculate" class="simulate-button distance-button" type="button">HESAPLA</button>
+        <p id="distanceValidation" class="validation" role="status" aria-live="polite"></p>
+      </section>
+
+      <section class="distance-result" id="distanceResult" aria-live="polite">
+        <div class="distance-result-head">VARIŞ TAHMİNİ</div>
+        <div class="distance-main-result">
+          <span>Toplam Süre</span>
+          <strong id="durationText">--:--:--</strong>
+        </div>
+        <div class="distance-result-grid">
+          <div><span>Mesafe</span><strong id="distanceText">—</strong></div>
+          <div><span>Hız</span><strong id="speedText">—</strong></div>
+          <div><span>Çıkış</span><strong id="departureText">—</strong></div>
+          <div><span>Varış</span><strong id="arrivalText">—</strong></div>
+        </div>
+        <p class="distance-note">Varış saati, Hesapla'ya bastığın andaki cihaz saatinden hesaplanır.</p>
+      </section>
+    </section>
+
+    <section id="lockPanel" class="distance-mode-panel" hidden>
+      <section class="distance-card">
+        <div class="lock-explainer">
+          Rakibin saldırısı hedefe ulaştıktan sonra aynı yol süresince geri döner. Kilit zamanı, rakip ordunun kendi köyüne döndüğü saniyedir.
+        </div>
+
+        <div class="coord-block">
+          <h2>RAKİP KÖYÜ</h2>
+          <div class="coord-grid">
+            <label>X<input id="lockHomeX" type="number" inputmode="numeric" placeholder="25250"></label>
+            <label>Y<input id="lockHomeY" type="number" inputmode="numeric" placeholder="30250"></label>
+          </div>
+        </div>
+
+        <div class="coord-arrow" aria-hidden="true">↕</div>
+
+        <div class="coord-block">
+          <h2>SALDIRI HEDEFİ</h2>
+          <div class="coord-grid">
+            <label>X<input id="lockTargetX" type="number" inputmode="numeric" placeholder="26490"></label>
+            <label>Y<input id="lockTargetY" type="number" inputmode="numeric" placeholder="30084"></label>
+          </div>
+        </div>
+
+        <div class="travel-options">
+          <label class="travel-field">
+            <span>Rakip Ulus</span>
+            <select id="lockNation">
+              <option value="gokturk">Göktürk</option>
+              <option value="selcuk">Selçuk</option>
+              <option value="hun">Hun</option>
+            </select>
+          </label>
+
+          <label class="travel-field">
+            <span>Rakip Birlik</span>
+            <select id="lockUnit"></select>
+          </label>
+        </div>
+        <p class="field-hint">Rakip orduda birden fazla birlik varsa en yavaş birliği seç.</p>
+
+        <label class="diamond-option">
+          <input id="lockDiamond" type="checkbox">
+          <span class="diamond-box">💎</span>
+          <span>
+            <strong>Rakip 2× hız kullandı</strong>
+            <small>Yol süresi yarıya iner</small>
+          </span>
+        </label>
+
+        <div class="lock-time-block">
+          <span>Rakip saldırının hedefe varış zamanı</span>
+          <div class="lock-time-grid">
+            <input id="lockArrivalDate" type="date" aria-label="Rakip saldırının hedefe varış tarihi">
+            <input id="lockArrivalTime" type="time" step="1" aria-label="Rakip saldırının hedefe varış saati">
+          </div>
+          <button id="lockUseNow" class="mini-button" type="button">Anlık Saati Kullan</button>
+        </div>
+
+        <button id="lockCalculate" class="simulate-button distance-button" type="button">KİLİDİ HESAPLA</button>
+        <p id="lockValidation" class="validation" role="status" aria-live="polite"></p>
+      </section>
+
+      <section class="distance-result lock-result" aria-live="polite">
+        <div class="distance-result-head">KİLİT HESABI</div>
+        <div class="distance-main-result lock-main-result">
+          <span>Rakibin Köye Dönüşü / Kilit Zamanı</span>
+          <strong id="lockReturnText">--:--:--</strong>
+          <small id="lockReturnDateText">—</small>
+        </div>
+        <div class="distance-result-grid">
+          <div><span>Mesafe</span><strong id="lockDistanceText">—</strong></div>
+          <div><span>Rakip Hızı</span><strong id="lockSpeedText">—</strong></div>
+          <div><span>Gidiş Süresi</span><strong id="lockTravelText">—</strong></div>
+          <div><span>Dönüş Süresi</span><strong id="lockBackText">—</strong></div>
+          <div class="wide-result"><span>Hedefe Varış</span><strong id="lockHitText">—</strong></div>
+        </div>
+        <p class="distance-note">Kilit zamanı = rakibin hedefe varış zamanı + aynı mesafenin dönüş süresi.</p>
+      </section>
     </section>
 
     <footer>By SPQR-Eren</footer>
   </main>
-  <script src="distance.js?v=20261002-distance1"></script>
+  <script src="distance.js?v=20261002-lock1"></script>
 </body>
 </html>
