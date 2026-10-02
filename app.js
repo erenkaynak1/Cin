@@ -84,6 +84,7 @@ function card(unit,side){
   art.style.backgroundImage=s.image;
   art.style.backgroundSize=s.size;
   art.style.backgroundPosition=s.posX+" "+s.posY;
+  art.style.aspectRatio=unit.sheet==="gokturk"?"2 / 3":"8 / 11";
   const n=document.createElement("div");
   n.className="unit-name";
   n.textContent=unit.name;
