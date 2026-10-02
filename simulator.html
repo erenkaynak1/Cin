@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
   <meta name="theme-color" content="#07090b">
   <title>Savaş Simülatörü · HERKES CİN GİBİ</title>
-  <link rel="stylesheet" href="styles.css?v=20261002-reportcompact3">
+  <link rel="stylesheet" href="styles.css?v=20261002-scan1">
 </head>
 <body class="sim-body">
   <main class="sim-shell">
@@ -28,6 +28,13 @@
             <option value="hun">Hun</option>
           </select>
         </div>
+        <div class="scan-import">
+          <label class="scan-button">
+            <span>📷 Görselden Doldur</span>
+            <input id="attackerImage" type="file" accept="image/*" hidden>
+          </label>
+          <span id="attackerScanStatus" class="scan-status">Ordu ekranı veya casus raporu</span>
+        </div>
         <div class="unit-grid" id="attackerUnits"></div>
       </section>
 
@@ -39,6 +46,13 @@
             <option value="selcuk">Selçuk</option>
             <option value="hun">Hun</option>
           </select>
+        </div>
+        <div class="scan-import">
+          <label class="scan-button">
+            <span>📷 Görselden Doldur</span>
+            <input id="defenderImage" type="file" accept="image/*" hidden>
+          </label>
+          <span id="defenderScanStatus" class="scan-status">Ordu ekranı veya casus raporu</span>
         </div>
         <div class="unit-grid" id="defenderUnits"></div>
         <label class="wall-control" for="wallLevel">
@@ -86,6 +100,7 @@
 
     <footer>By SPQR-Eren</footer>
   </main>
-  <script src="app-v2.js?v=20261002-reportcards2"></script>
+  <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
+  <script src="app-v2.js?v=20261002-scan1"></script>
 </body>
 </html>
