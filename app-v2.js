@@ -1,5 +1,7 @@
 (()=>{
 const WALL_BONUS={gokturk:.04,selcuk:.035,hun:.03};
+const LOSS_EXPONENT=1.148;
+const CASUALTY_WEIGHT_BLEND=.01;
 
 const COMMON={
   mancinik:{id:"mancinik",name:"Mancınık",attack:90,infDef:45,cavDef:130,speed:50,carry:0,type:"siege",sheet:"gokturk",sprite:7},
@@ -174,23 +176,34 @@ function distribute(a,e,totalLoss,side){
     a.units.forEach(u=>out[u.id]=a.counts[u.id]||0);
     return out
   }
+
+  // Gerçek savaş raporunda normal birlikler toplam kayıp oranını neredeyse
+  // bire bir takip ediyor. Tür/savunma ağırlığını yalnızca küçük bir düzeltme
+  // olarak kullanıyoruz; böylece kuşatma/Kemankeş/süvari farkı korunuyor ama
+  // kayıp dağılımı yapay biçimde aşırı sapmıyor.
   const enemyCav=cavalryRatio(e);
   const rows=a.units.map(u=>{
     const count=a.counts[u.id]||0;
     const defense=Math.max(1,u.infDef*(1-enemyCav)+u.cavDef*enemyCav);
-    return{id:u.id,count,weight:count*(typeMult(u,side)/defense)}
+    return{id:u.id,count,weighted:count*(typeMult(u,side)/defense)}
   });
-  const totalWeight=rows.reduce((sum,x)=>sum+x.weight,0);
-  if(!totalWeight)return out;
+  const totalWeighted=rows.reduce((sum,x)=>sum+x.weighted,0);
+  const totalCount=rows.reduce((sum,x)=>sum+x.count,0);
+  if(!totalCount)return out;
+
   let assigned=0;
   const remainder=[];
   rows.forEach(x=>{
-    const exact=totalLoss*(x.weight/totalWeight);
+    const uniformShare=x.count/totalCount;
+    const weightedShare=totalWeighted?x.weighted/totalWeighted:uniformShare;
+    const share=uniformShare*(1-CASUALTY_WEIGHT_BLEND)+weightedShare*CASUALTY_WEIGHT_BLEND;
+    const exact=totalLoss*share;
     const base=Math.min(x.count,Math.floor(exact));
     out[x.id]=base;
     assigned+=base;
     remainder.push({id:x.id,cap:x.count,r:exact-Math.floor(exact)})
   });
+
   remainder.sort((a,b)=>b.r-a.r);
   while(assigned<totalLoss){
     let moved=false;
@@ -256,7 +269,7 @@ $("simulateButton").addEventListener("click",()=>{
   const attackerWon=atkPower>defPower;
   const strong=Math.max(atkPower,defPower);
   const weak=Math.min(atkPower,defPower);
-  const base=(weak**1.2)/((weak**1.2)+(strong**1.2));
+  const base=(weak**LOSS_EXPONENT)/((weak**LOSS_EXPONENT)+(strong**LOSS_EXPONENT));
   const winnerLossRate=Math.min(.90,Math.max(0,base));
   const attackerLoss=attackerWon?Math.round(a.total*winnerLossRate):a.total;
   const defenderLoss=attackerWon?d.total:Math.round(d.total*winnerLossRate);
