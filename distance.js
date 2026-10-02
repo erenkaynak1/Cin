@@ -136,13 +136,13 @@ $("lockCalculate").addEventListener("click",()=>{
   $("lockValidation").textContent="";
 
   const distance=calcDistance(x1,y1,x2,y2);
-  const {effective,seconds}=calcSeconds(distance,selectedSpeed(lockUnit),$("lockDiamond").checked);
+  const {effective,seconds}=calcSeconds(distance,selectedSpeed(lockUnit),false);
   const back=new Date(hit.getTime()+seconds*1000);
 
   $("lockReturnText").textContent=formatClock(back);
   $("lockReturnDateText").textContent=formatDate(back);
   $("lockDistanceText").textContent=fmtNum(distance);
-  $("lockSpeedText").textContent=String(effective)+($("lockDiamond").checked?" (2×)":"");
+  $("lockSpeedText").textContent=String(effective);
   $("lockTravelText").textContent=formatDuration(seconds);
   $("lockBackText").textContent=formatDuration(seconds);
   $("lockHitText").textContent=formatDate(hit)+" "+formatClock(hit);
