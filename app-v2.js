@@ -183,28 +183,141 @@ function detectNation(text){
   return ranked[0][1]>0?ranked[0][0]:null;
 }
 
-function extractCountsFromText(text,nation){
+function unitOccurrences(source,nation,excludeCasus){
+  const candidates=OCR_UNIT_NAMES.filter(x=>
+    (x.nation===nation||x.nation==="common") && !(excludeCasus&&x.id==="casus")
+  );
+  const found=[];
+  candidates.forEach(item=>{
+    let best=null;
+    item.aliases.forEach(aliasRaw=>{
+      const alias=normalizeOcr(aliasRaw);
+      const pos=source.indexOf(alias);
+      if(pos>=0 && (!best||pos<best.pos)) best={id:item.id,pos,end:pos+alias.length};
+    });
+    if(best)found.push(best);
+  });
+  return found.sort((a,b)=>a.pos-b.pos);
+}
+
+function numericMatches(source){
+  const out=[];
+  const re=/\b([0-9][0-9., ]{0,14})\b/g;
+  let m;
+  while((m=re.exec(source))){
+    const value=parseCount(m[1]);
+    if(value!==null)out.push({pos:m.index,value});
+  }
+  return out;
+}
+
+function parseSpyReport(text,nation){
   const norm=normalizeOcr(text);
-  const spyIndex=norm.indexOf("kesfedilen birlikler");
-  const source=spyIndex>=0?norm.slice(spyIndex):norm;
-  const candidates=OCR_UNIT_NAMES.filter(x=>x.nation===nation||x.nation==="common");
+  const marker=norm.indexOf("kesfedilen birlikler");
+  if(marker<0)return {};
+  const source=norm.slice(marker);
+  const units=unitOccurrences(source,nation,true);
   const found={};
 
-  candidates.forEach(item=>{
-    for(const aliasRaw of item.aliases){
-      const alias=regexSafe(normalizeOcr(aliasRaw));
-      const re=new RegExp(alias+"[\\s:,-]{0,16}(?:mevcut[\\s:,-]{0,12})?([0-9][0-9., ]{0,14})","i");
-      const m=source.match(re);
-      if(m){
-        const value=parseCount(m[1]);
-        if(value!==null){
-          found[item.id]=value;
-          break;
-        }
-      }
+  // Önce kart içindeki "Mevcut 3,026" gibi doğrudan eşleşmeleri dene.
+  units.forEach((u,index)=>{
+    const next=units[index+1]?.pos ?? source.length;
+    const segment=source.slice(u.end,next);
+    const m=segment.match(/mevcut[\s:,-]{0,12}([0-9][0-9., ]{0,14})/i);
+    if(m){
+      const value=parseCount(m[1]);
+      if(value!==null)found[u.id]=value;
     }
   });
+
+  // OCR bazen önce bütün isimleri, sonra bütün "Mevcut" sayılarını okuyor.
+  // Bu durumda birimleri ve Mevcut sayılarını ekrandaki sırayla eşleştir.
+  if(Object.keys(found).length<units.length){
+    const values=[];
+    const re=/mevcut[\s:,-]{0,12}([0-9][0-9., ]{0,14})/gi;
+    let m;
+    while((m=re.exec(source))){
+      const value=parseCount(m[1]);
+      if(value!==null)values.push(value);
+    }
+    if(values.length>=units.length){
+      units.forEach((u,i)=>found[u.id]=values[i]);
+    }
+  }
+
+  // Casus raporundaki Casus kartı keşif için gönderilen saldıran casusudur.
+  // Savunan orduya hiçbir zaman aktarılmaz.
+  delete found.casus;
   return found;
+}
+
+function parseCityArmy(text,nation){
+  const norm=normalizeOcr(text);
+  let source=norm;
+
+  // Şehir ekranında asker çubuğu Haritaya Dön düğmesinden sonra geliyor.
+  const mapMarkers=["haritaya don","haritaya dön"];
+  let marker=-1;
+  mapMarkers.forEach(m=>{const p=norm.indexOf(normalizeOcr(m));if(p>=0&&(marker<0||p<marker))marker=p;});
+  if(marker>=0)source=norm.slice(marker);
+
+  // Alt menü sayılarını asker adedi sanmamak için asker çubuğundan sonra kes.
+  const navMarkers=[" hediye "," giden "," rapor "," birlik "," canta "," çanta "];
+  let cut=source.length;
+  navMarkers.forEach(m=>{
+    const p=source.indexOf(normalizeOcr(m));
+    if(p>0&&p<cut)cut=p;
+  });
+  source=source.slice(0,cut);
+
+  let units=unitOccurrences(source,nation,false);
+  if(!units.length){
+    // Haritaya Dön OCR'da kaçtıysa tam metindeki ilk asker adından başla.
+    const all=unitOccurrences(norm,nation,false);
+    if(all.length){
+      const first=all[0].pos;
+      source=norm.slice(first);
+      let fallbackCut=source.length;
+      navMarkers.forEach(m=>{
+        const p=source.indexOf(normalizeOcr(m));
+        if(p>0&&p<fallbackCut)fallbackCut=p;
+      });
+      source=source.slice(0,fallbackCut);
+      units=unitOccurrences(source,nation,false);
+    }
+  }
+
+  const found={};
+
+  // Normal OCR akışında isimden sonraki, sonraki asker adına kadar olan ilk sayı adettir.
+  units.forEach((u,index)=>{
+    const next=units[index+1]?.pos ?? source.length;
+    const segment=source.slice(u.end,next);
+    const m=segment.match(/\b([0-9][0-9., ]{0,14})\b/);
+    if(m){
+      const value=parseCount(m[1]);
+      if(value!==null)found[u.id]=value;
+    }
+  });
+
+  // Yatay kart dizilerinde OCR kimi zaman önce bütün isimleri sonra bütün sayıları döndürür.
+  // Böyleyse asker kartlarını ekrandaki soldan-sağa sırayla sayılarla eşleştir.
+  if(units.length>=2 && Object.keys(found).length<Math.ceil(units.length/2)){
+    const nums=numericMatches(source).filter(n=>n.pos>units[0].pos);
+    if(nums.length>=units.length){
+      units.forEach((u,i)=>found[u.id]=nums[i].value);
+    }
+  }
+  return found;
+}
+
+function extractCountsFromText(text,nation){
+  const norm=normalizeOcr(text);
+  const isSpy=norm.includes("kesfedilen birlikler")||norm.includes("casuslama");
+  return {
+    mode:isSpy?"spy":"city",
+    counts:isSpy?parseSpyReport(text,nation):parseCityArmy(text,nation)
+  };
 }
 
 function fillRecognized(side,nation,counts){
@@ -238,7 +351,8 @@ async function scanArmyImage(file,side){
     });
     const text=result&&result.data?result.data.text||"":"";
     const nation=detectNation(text)||(side==="attacker"?atkNation.value:defNation.value);
-    const counts=extractCountsFromText(text,nation);
+    const parsed=extractCountsFromText(text,nation);
+    const counts=parsed.counts;
     const recognized=Object.keys(counts).length;
 
     if(!recognized){
@@ -248,7 +362,9 @@ async function scanArmyImage(file,side){
     }
 
     fillRecognized(side,nation,counts);
-    status.textContent=recognized+" birlik otomatik dolduruldu.";
+    status.textContent=parsed.mode==="spy"
+      ? recognized+" savunma birliği dolduruldu · Casus atlandı."
+      : recognized+" birlik otomatik dolduruldu.";
     status.classList.add("success");
   }catch(err){
     status.textContent="Görsel okunurken hata oluştu.";
