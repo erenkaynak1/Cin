@@ -1,0 +1,26 @@
+name: Import nation unit sprites
+on:
+  push:
+    branches: [main]
+    paths:
+      - ".github/workflows/import-nation-assets.yml"
+permissions:
+  contents: write
+jobs:
+  import:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Download Selcuk and Hun sprites
+        run: |
+          mkdir -p assets
+          curl -L --fail --silent --show-error "https://pikaso.cdnpk.net/private/production/5614280680/3672133602.jpg?token=exp=1791331200~hmac=886faf3e2a6cabf3cc512e65135bc1e44dcc91fafa31bce7b73530834f1b229d" -o assets/selcuk-units.jpg
+          curl -L --fail --silent --show-error "https://pikaso.cdnpk.net/private/production/5614280832/3672133672.jpg?token=exp=1791331200~hmac=eabc434ada4b6268ef29224c656e9c9bbdfbe8aa620cd5c7d926bfc897c01c8f" -o assets/hun-units.jpg
+      - name: Commit sprites
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add assets/selcuk-units.jpg assets/hun-units.jpg
+          git diff --cached --quiet && exit 0
+          git commit -m "assets: add Selcuk and Hun unit sprites"
+          git push
