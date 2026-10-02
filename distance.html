@@ -1,0 +1,88 @@
+<!doctype html>
+<html lang="tr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <meta name="theme-color" content="#07090b">
+  <title>Mesafe & Varış · HERKES CİN GİBİ</title>
+  <link rel="stylesheet" href="styles.css?v=20261002-distance1">
+</head>
+<body class="distance-body">
+  <main class="distance-shell">
+    <header class="sim-header distance-header">
+      <a class="back-link" href="index.html" aria-label="Ana ekrana dön">‹</a>
+      <div>
+        <h1>MESAFE & VARIŞ</h1>
+        <p>Koordinatları gir, birlik seç ve varış süresini hesapla.</p>
+      </div>
+      <span></span>
+    </header>
+
+    <section class="distance-card">
+      <div class="coord-block">
+        <h2>KAYNAK</h2>
+        <div class="coord-grid">
+          <label>X<input id="fromX" type="number" inputmode="numeric" placeholder="25250"></label>
+          <label>Y<input id="fromY" type="number" inputmode="numeric" placeholder="30250"></label>
+        </div>
+      </div>
+
+      <div class="coord-arrow" aria-hidden="true">↓</div>
+
+      <div class="coord-block">
+        <h2>HEDEF</h2>
+        <div class="coord-grid">
+          <label>X<input id="toX" type="number" inputmode="numeric" placeholder="26490"></label>
+          <label>Y<input id="toY" type="number" inputmode="numeric" placeholder="30084"></label>
+        </div>
+      </div>
+
+      <div class="travel-options">
+        <label class="travel-field">
+          <span>Ulus</span>
+          <select id="travelNation">
+            <option value="gokturk">Göktürk</option>
+            <option value="selcuk">Selçuk</option>
+            <option value="hun">Hun</option>
+          </select>
+        </label>
+
+        <label class="travel-field">
+          <span>Birlik</span>
+          <select id="travelUnit"></select>
+        </label>
+      </div>
+
+      <label class="diamond-option">
+        <input id="diamondTravel" type="checkbox">
+        <span class="diamond-box">💎</span>
+        <span>
+          <strong>Elmaslı Gidiş</strong>
+          <small>2× hız</small>
+        </span>
+      </label>
+
+      <button id="distanceCalculate" class="simulate-button distance-button" type="button">HESAPLA</button>
+      <p id="distanceValidation" class="validation" role="status" aria-live="polite"></p>
+    </section>
+
+    <section class="distance-result" id="distanceResult" aria-live="polite">
+      <div class="distance-result-head">VARIŞ TAHMİNİ</div>
+      <div class="distance-main-result">
+        <span>Süre</span>
+        <strong id="durationText">--:--:--</strong>
+      </div>
+      <div class="distance-result-grid">
+        <div><span>Mesafe</span><strong id="distanceText">—</strong></div>
+        <div><span>Hız</span><strong id="speedText">—</strong></div>
+        <div><span>Çıkış</span><strong id="departureText">—</strong></div>
+        <div><span>Varış</span><strong id="arrivalText">—</strong></div>
+      </div>
+      <p class="distance-note">Hesap, verdiğin gerçek Kemankeş örneğine göre kalibre edildi.</p>
+    </section>
+
+    <footer>By SPQR-Eren</footer>
+  </main>
+  <script src="distance.js?v=20261002-distance1"></script>
+</body>
+</html>
