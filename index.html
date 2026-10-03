@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
   <meta name="theme-color" content="#050607">
   <title>HERKES CİN GİBİ</title>
-  <link rel="stylesheet" href="styles.css?v=20261002-lock1">
+  <link rel="stylesheet" href="styles.css?v=20261003-sonred1">
 </head>
 <body class="home-body">
   <main class="home-shell" aria-label="HERKES CİN GİBİ ana ekranı">
@@ -15,12 +15,24 @@
     <a class="hotspot hotspot-simulator" href="simulator.html" aria-label="Savaş Simülatörünü aç"></a>
     <button class="hotspot hotspot-disabled hotspot-guide" disabled aria-label="Asker Rehberi, yakında"></button>
     <button class="hotspot hotspot-disabled hotspot-settings" disabled aria-label="Ayarlar, yakında"></button>
+    <button class="home-extra-button" type="button" id="sonredButton">Sonred Onur Tomatlama</button>
+    <div class="home-toast" id="homeToast" role="status" aria-live="polite"></div>
   </main>
   <script>
     fetch("assets/home.b64.txt")
       .then(r => { if (!r.ok) throw new Error("asset"); return r.text(); })
       .then(b64 => { document.getElementById("homeArt").src = "data:image/webp;base64," + b64.trim(); })
       .catch(() => { document.getElementById("homeArt").alt = "Ana ekran görseli yüklenemedi."; });
+
+    const sonredButton = document.getElementById("sonredButton");
+    const homeToast = document.getElementById("homeToast");
+    let toastTimer;
+    sonredButton.addEventListener("click", () => {
+      homeToast.textContent = "Yakında";
+      homeToast.classList.add("show");
+      clearTimeout(toastTimer);
+      toastTimer = setTimeout(() => homeToast.classList.remove("show"), 1200);
+    });
   </script>
 </body>
 </html>
