@@ -317,7 +317,10 @@ async function scanArmyImage(file,side){
     const norm=normalizeOcr(text);
     const isSpy=norm.includes("kesfedilen birlikler")||norm.includes("casuslama");
     const fallback=side==="attacker"?atkNation.value:defNation.value;
-    const owner=dominantNationFromText(text,fallback);
+    // Casus raporunda görülen birliklerin ulusu şehir sahibinin ulusu değildir:
+    // destek birlikleri farklı uluslardan gelebilir. Bu yüzden savunan şehir ulusunu
+    // kullanıcının seçimi olarak koruyoruz; yalnızca birlik kartlarının ulusunu OCR'dan çıkarıyoruz.
+    const owner=(isSpy&&side==="defender")?defNation.value:dominantNationFromText(text,fallback);
     const entries=isSpy
       ?parseMixedNamedCounts(text,owner,true)
       :parseCityArmy(text,owner);
