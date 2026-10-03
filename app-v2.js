@@ -1,5 +1,15 @@
 (()=>{
-const WALL_BONUS={gokturk:.04,selcuk:.035,hun:.03};
+const RULESET={
+  id:"targun-2026-10-02",
+  wallBonus:{gokturk:.04,selcuk:.035,hun:.03},
+  nationDefenseMultiplier:{gokturk:1,selcuk:1,hun:1},
+  nationDefenseKnown:false,
+  lossAnchors:[[1,.95],[2,.35],[3,.19],[5,.09],[10,.03],[20,.01]],
+  raidIncluded:false,
+  archerCombo:false,
+  numericalSuperiorityBonus:false
+};
+const WALL_BONUS=RULESET.wallBonus;
 
 const COMMON={
   mancinik:{id:"mancinik",name:"Mancınık",attack:90,infDef:45,cavDef:130,speed:50,carry:0,type:"siege",sheet:"gokturk",sprite:7},
@@ -40,11 +50,12 @@ const NATIONS={
   ]
 };
 
+const NATION_LABEL={gokturk:"Göktürk",selcuk:"Selçuk",hun:"Hun"};
 const $=id=>document.getElementById(id);
 const atkHost=$("attackerUnits"),defHost=$("defenderUnits");
-const atkNation=$("attackerNation"),defNation=$("defenderNation");
+const atkNation=$("attackerNation"),defNation=$("defenderNation"),defTroopNation=$("defenderTroopNation");
 const wallLevel=$("wallLevel");
-if(!atkHost||!defHost||!atkNation||!defNation||!wallLevel)return;
+if(!atkHost||!defHost||!atkNation||!defNation||!defTroopNation||!wallLevel)return;
 
 document.documentElement.style.setProperty("--sprite-selcuk",'url("assets/selcuk-units.jpg")');
 document.documentElement.style.setProperty("--sprite-hun",'url("assets/hun-units.jpg")');
@@ -57,8 +68,10 @@ const clamp=(v,min=0,max=999999999)=>{
   const n=parseInt(String(v).replace(/[^0-9-]/g,""),10);
   return Number.isFinite(n)?Math.min(max,Math.max(min,n)):min
 };
-
 const unitsFor=nation=>NATIONS[nation]||NATIONS.gokturk;
+const unitFor=(nation,id)=>unitsFor(nation).find(u=>u.id===id)||null;
+const troopKey=(nation,id)=>nation+":"+id;
+const countsState={attacker:{},defender:{}};
 
 function spriteStyle(unit){
   const cols=unit.sheet==="gokturk"?5:4;
@@ -73,7 +86,7 @@ function spriteStyle(unit){
   };
 }
 
-function card(unit,side){
+function card(unit,side,nation){
   const a=document.createElement("article");
   a.className="unit-card";
   const art=document.createElement("div");
@@ -85,65 +98,101 @@ function card(unit,side){
   art.style.backgroundSize=s.size;
   art.style.backgroundPosition=s.posX+" "+s.posY;
   art.style.aspectRatio=unit.sheet==="gokturk"?"2 / 3":"8 / 11";
+
   const n=document.createElement("div");
   n.className="unit-name";
   n.textContent=unit.name;
+
   const input=document.createElement("input");
   input.type="number";
   input.min="0";
   input.step="1";
-  input.value="0";
   input.inputMode="numeric";
   input.dataset.side=side;
   input.dataset.unit=unit.id;
-  input.setAttribute("aria-label",(side==="attacker"?"Saldıran ":"Savunan ")+unit.name+" adedi");
-  input.addEventListener("focus",()=>{
-    if(input.value==="0") input.value="";
+  input.dataset.nation=nation;
+  const key=troopKey(nation,unit.id);
+  input.value=String(countsState[side][key]||0);
+  input.setAttribute("aria-label",(side==="attacker"?"Saldıran ":"Savunan ")+NATION_LABEL[nation]+" "+unit.name+" adedi");
+  input.addEventListener("focus",()=>{if(input.value==="0")input.value=""});
+  input.addEventListener("input",()=>{
+    const value=clamp(input.value);
+    countsState[side][key]=value;
+    if(side==="defender")updateMixSummary();
   });
   input.addEventListener("blur",()=>{
-    if(input.value.trim()==="") input.value="0";
+    if(input.value.trim()==="")input.value="0";
     else input.value=clamp(input.value);
+    countsState[side][key]=clamp(input.value);
+    if(side==="defender")updateMixSummary();
   });
-  input.addEventListener("change",()=>input.value=clamp(input.value));
+  input.addEventListener("change",()=>{
+    input.value=clamp(input.value);
+    countsState[side][key]=clamp(input.value);
+    if(side==="defender")updateMixSummary();
+  });
   a.append(art,n,input);
   return a
 }
 
 function renderUnits(side){
-  const nation=side==="attacker"?atkNation.value:defNation.value;
+  const nation=side==="attacker"?atkNation.value:defTroopNation.value;
   const host=side==="attacker"?atkHost:defHost;
   host.innerHTML="";
-  unitsFor(nation).forEach(u=>host.appendChild(card(u,side)));
+  unitsFor(nation).forEach(u=>host.appendChild(card(u,side,nation)));
 }
 
-atkNation.addEventListener("change",()=>renderUnits("attacker"));
-defNation.addEventListener("change",()=>renderUnits("defender"));
+function clearAttackerOtherNations(){
+  const selected=atkNation.value;
+  Object.keys(countsState.attacker).forEach(key=>{
+    if(!key.startsWith(selected+":"))delete countsState.attacker[key];
+  });
+}
 
-const OCR_UNIT_NAMES=[
-  {nation:"gokturk",id:"karabudun",aliases:["karabudun"]},
-  {nation:"gokturk",id:"kemankes",aliases:["kemankes","keman kes"]},
-  {nation:"gokturk",id:"tapukci",aliases:["tapukci","tapukçi","tapukcı"]},
-  {nation:"gokturk",id:"mavi-kurt",aliases:["mavi kurt"]},
-  {nation:"gokturk",id:"muhafiz",aliases:["muhafiz","muhafız"]},
-  {nation:"gokturk",id:"mavi-atli",aliases:["mavi atli","mavi atlı"]},
-  {nation:"gokturk",id:"kursad",aliases:["kursad","kürsad","kürşad","kursat"]},
-  {nation:"selcuk",id:"gulam",aliases:["gulam"]},
-  {nation:"selcuk",id:"kemankes",aliases:["kemankes","keman kes"]},
-  {nation:"selcuk",id:"selcuk",aliases:["selcuk","selçuk"]},
-  {nation:"selcuk",id:"alparslan",aliases:["alparslan","alp arslan"]},
-  {nation:"selcuk",id:"kargili",aliases:["kargili","kargılı"]},
-  {nation:"selcuk",id:"atli-okcu",aliases:["atli okcu","atlı okçu","atli okçu"]},
-  {nation:"selcuk",id:"sipahi",aliases:["sipahi"]},
-  {nation:"hun",id:"toygun",aliases:["toygun"]},
-  {nation:"hun",id:"kemankes",aliases:["kemankes","keman kes"]},
-  {nation:"hun",id:"tarik",aliases:["tarik","tarık"]},
-  {nation:"hun",id:"barlas",aliases:["barlas"]},
-  {nation:"hun",id:"tunga",aliases:["tunga"]},
-  {nation:"hun",id:"talakan",aliases:["talakan"]},
-  {nation:"hun",id:"tarkan",aliases:["tarkan"]},
-  {nation:"common",id:"mancinik",aliases:["mancinik","mancınık"]},
-  {nation:"common",id:"topcu",aliases:["topcu","topçu"]},
-  {nation:"common",id:"casus",aliases:["casus"]}
+function updateMixSummary(){
+  const nations=new Set();
+  Object.entries(countsState.defender).forEach(([key,count])=>{
+    if(count>0)nations.add(key.split(":")[0]);
+  });
+  const host=$("defenderMixSummary");
+  if(!host)return;
+  if(nations.size<=1){
+    host.textContent="Savunma birlikleri "+(nations.size===1?NATION_LABEL[[...nations][0]]:"tek ulus")+" görünümünde.";
+  }else{
+    host.textContent="Karma savunma: "+[...nations].map(n=>NATION_LABEL[n]).join(" + ");
+  }
+}
+
+atkNation.addEventListener("change",()=>{
+  clearAttackerOtherNations();
+  renderUnits("attacker");
+});
+defNation.addEventListener("change",()=>updateMixSummary());
+defTroopNation.addEventListener("change",()=>renderUnits("defender"));
+
+const OCR_CANONICAL=[
+  {id:"karabudun",nations:["gokturk"],aliases:["karabudun"]},
+  {id:"tapukci",nations:["gokturk"],aliases:["tapukci","tapukçi","tapukcı"]},
+  {id:"mavi-kurt",nations:["gokturk"],aliases:["mavi kurt"]},
+  {id:"muhafiz",nations:["gokturk"],aliases:["muhafiz","muhafız"]},
+  {id:"mavi-atli",nations:["gokturk"],aliases:["mavi atli","mavi atlı"]},
+  {id:"kursad",nations:["gokturk"],aliases:["kursad","kürsad","kürşad","kursat"]},
+  {id:"gulam",nations:["selcuk"],aliases:["gulam"]},
+  {id:"selcuk",nations:["selcuk"],aliases:["selcuk","selçuk"]},
+  {id:"alparslan",nations:["selcuk"],aliases:["alparslan","alp arslan"]},
+  {id:"kargili",nations:["selcuk"],aliases:["kargili","kargılı"]},
+  {id:"atli-okcu",nations:["selcuk"],aliases:["atli okcu","atlı okçu","atli okçu"]},
+  {id:"sipahi",nations:["selcuk"],aliases:["sipahi"]},
+  {id:"toygun",nations:["hun"],aliases:["toygun"]},
+  {id:"tarik",nations:["hun"],aliases:["tarik","tarık"]},
+  {id:"barlas",nations:["hun"],aliases:["barlas"]},
+  {id:"tunga",nations:["hun"],aliases:["tunga"]},
+  {id:"talakan",nations:["hun"],aliases:["talakan"]},
+  {id:"tarkan",nations:["hun"],aliases:["tarkan"]},
+  {id:"kemankes",nations:["gokturk","selcuk","hun"],aliases:["kemankes","keman kes"]},
+  {id:"mancinik",nations:["gokturk","selcuk","hun"],aliases:["mancinik","mancınık"]},
+  {id:"topcu",nations:["gokturk","selcuk","hun"],aliases:["topcu","topçu"]},
+  {id:"casus",nations:["gokturk","selcuk","hun"],aliases:["casus"]}
 ];
 
 function normalizeOcr(text){
@@ -151,181 +200,99 @@ function normalizeOcr(text){
     .toLocaleLowerCase("tr-TR")
     .replace(/ı/g,"i").replace(/ş/g,"s").replace(/ç/g,"c")
     .replace(/ğ/g,"g").replace(/ü/g,"u").replace(/ö/g,"o")
-    .replace(/[|]/g," ")
-    .replace(/\s+/g," ")
-    .trim();
+    .replace(/[|]/g," ").replace(/\s+/g," ").trim();
 }
-
 function regexSafe(value){
   const specials="\\^$.*+?()[]{}|";
   let out="";
-  for(const ch of value) out+=specials.includes(ch)?"\\"+ch:ch;
+  for(const ch of value)out+=specials.includes(ch)?"\\"+ch:ch;
   return out;
 }
-
 function parseCount(raw){
   const digits=String(raw||"").replace(/\D/g,"");
   if(!digits)return null;
   const value=Number(digits);
   return Number.isFinite(value)?value:null;
 }
-
-function detectNation(text){
-  const scores={gokturk:0,selcuk:0,hun:0};
+function dominantNationFromText(text,fallback){
   const norm=normalizeOcr(text);
-  OCR_UNIT_NAMES.forEach(item=>{
-    if(item.nation==="common"||item.id==="kemankes")return;
-    if(item.aliases.some(a=>norm.includes(normalizeOcr(a))))scores[item.nation]++;
+  const score={gokturk:0,selcuk:0,hun:0};
+  OCR_CANONICAL.forEach(item=>{
+    if(item.nations.length!==1)return;
+    if(item.aliases.some(a=>norm.includes(normalizeOcr(a))))score[item.nations[0]]++;
   });
-  const ranked=Object.entries(scores).sort((a,b)=>b[1]-a[1]);
-  return ranked[0][1]>0?ranked[0][0]:null;
+  const ranked=Object.entries(score).sort((a,b)=>b[1]-a[1]);
+  return ranked[0][1]>0?ranked[0][0]:fallback;
 }
-
-function unitOccurrences(source,nation,excludeCasus){
-  const candidates=OCR_UNIT_NAMES.filter(x=>
-    (x.nation===nation||x.nation==="common") && !(excludeCasus&&x.id==="casus")
-  );
-  const found=[];
-  candidates.forEach(item=>{
-    let best=null;
-    item.aliases.forEach(aliasRaw=>{
-      const alias=normalizeOcr(aliasRaw);
-      const pos=source.indexOf(alias);
-      if(pos>=0 && (!best||pos<best.pos)) best={id:item.id,pos,end:pos+alias.length};
-    });
-    if(best)found.push(best);
-  });
-  return found.sort((a,b)=>a.pos-b.pos);
-}
-
-function numericMatches(source){
-  const out=[];
-  const re=/\b([0-9][0-9., ]{0,14})\b/g;
-  let m;
-  while((m=re.exec(source))){
-    const value=parseCount(m[1]);
-    if(value!==null)out.push({pos:m.index,value});
-  }
-  return out;
-}
-
-function parseSpyReport(text,nation){
+function parseMixedNamedCounts(text,ownerNation,excludeCasus){
   const norm=normalizeOcr(text);
   const marker=norm.indexOf("kesfedilen birlikler");
-  if(marker<0)return {};
-  const source=norm.slice(marker);
-  const units=unitOccurrences(source,nation,true);
-  const found={};
-
-  // Önce kart içindeki "Mevcut 3,026" gibi doğrudan eşleşmeleri dene.
-  units.forEach((u,index)=>{
-    const next=units[index+1]?.pos ?? source.length;
-    const segment=source.slice(u.end,next);
-    const m=segment.match(/mevcut[\s:,-]{0,12}([0-9][0-9., ]{0,14})/i);
-    if(m){
-      const value=parseCount(m[1]);
-      if(value!==null)found[u.id]=value;
+  const source=marker>=0?norm.slice(marker):norm;
+  const dominant=dominantNationFromText(source,ownerNation);
+  const entries=[];
+  OCR_CANONICAL.forEach(item=>{
+    if(excludeCasus&&item.id==="casus")return;
+    let best=null;
+    for(const aliasRaw of item.aliases){
+      const alias=regexSafe(normalizeOcr(aliasRaw));
+      const re=new RegExp(alias+"[\\s:,-]{0,20}(?:mevcut[\\s:,-]{0,14})?([0-9][0-9., ]{0,14})","i");
+      const m=source.match(re);
+      if(m){
+        const value=parseCount(m[1]);
+        if(value!==null){best=value;break}
+      }
     }
+    if(best===null)return;
+    const nation=item.nations.length===1?item.nations[0]:dominant;
+    entries.push({nation,id:item.id,count:best});
   });
-
-  // OCR bazen önce bütün isimleri, sonra bütün "Mevcut" sayılarını okuyor.
-  // Bu durumda birimleri ve Mevcut sayılarını ekrandaki sırayla eşleştir.
-  if(Object.keys(found).length<units.length){
-    const values=[];
-    const re=/mevcut[\s:,-]{0,12}([0-9][0-9., ]{0,14})/gi;
-    let m;
-    while((m=re.exec(source))){
-      const value=parseCount(m[1]);
-      if(value!==null)values.push(value);
-    }
-    if(values.length>=units.length){
-      units.forEach((u,i)=>found[u.id]=values[i]);
-    }
-  }
-
-  // Casus raporundaki Casus kartı keşif için gönderilen saldıran casusudur.
-  // Savunan orduya hiçbir zaman aktarılmaz.
-  delete found.casus;
-  return found;
+  return entries;
 }
 
 function parseCityArmy(text,nation){
   const norm=normalizeOcr(text);
   let source=norm;
-
-  // Şehir ekranında asker çubuğu Haritaya Dön düğmesinden sonra geliyor.
-  const mapMarkers=["haritaya don","haritaya dön"];
-  let marker=-1;
-  mapMarkers.forEach(m=>{const p=norm.indexOf(normalizeOcr(m));if(p>=0&&(marker<0||p<marker))marker=p;});
-  if(marker>=0)source=norm.slice(marker);
-
-  // Alt menü sayılarını asker adedi sanmamak için asker çubuğundan sonra kes.
-  const navMarkers=[" hediye "," giden "," rapor "," birlik "," canta "," çanta "];
+  const mapMarker=source.indexOf("haritaya don");
+  if(mapMarker>=0)source=source.slice(mapMarker);
+  const navMarkers=[" hediye "," giden "," rapor "," birlik "," canta "];
   let cut=source.length;
-  navMarkers.forEach(m=>{
-    const p=source.indexOf(normalizeOcr(m));
-    if(p>0&&p<cut)cut=p;
-  });
+  navMarkers.forEach(m=>{const p=source.indexOf(m);if(p>0&&p<cut)cut=p});
   source=source.slice(0,cut);
-
-  let units=unitOccurrences(source,nation,false);
-  if(!units.length){
-    // Haritaya Dön OCR'da kaçtıysa tam metindeki ilk asker adından başla.
-    const all=unitOccurrences(norm,nation,false);
-    if(all.length){
-      const first=all[0].pos;
-      source=norm.slice(first);
-      let fallbackCut=source.length;
-      navMarkers.forEach(m=>{
-        const p=source.indexOf(normalizeOcr(m));
-        if(p>0&&p<fallbackCut)fallbackCut=p;
-      });
-      source=source.slice(0,fallbackCut);
-      units=unitOccurrences(source,nation,false);
-    }
-  }
-
-  const found={};
-
-  // Normal OCR akışında isimden sonraki, sonraki asker adına kadar olan ilk sayı adettir.
-  units.forEach((u,index)=>{
-    const next=units[index+1]?.pos ?? source.length;
-    const segment=source.slice(u.end,next);
-    const m=segment.match(/\b([0-9][0-9., ]{0,14})\b/);
-    if(m){
-      const value=parseCount(m[1]);
-      if(value!==null)found[u.id]=value;
+  const entries=[];
+  unitsFor(nation).forEach(unit=>{
+    const aliases=OCR_CANONICAL.find(x=>x.id===unit.id)?.aliases||[unit.name];
+    for(const aliasRaw of aliases){
+      const alias=regexSafe(normalizeOcr(aliasRaw));
+      const re=new RegExp(alias+"[\\s:,-]{0,20}([0-9][0-9., ]{0,14})","i");
+      const m=source.match(re);
+      if(m){
+        const value=parseCount(m[1]);
+        if(value!==null){entries.push({nation,id:unit.id,count:value});break}
+      }
     }
   });
+  return entries;
+}
 
-  // Yatay kart dizilerinde OCR kimi zaman önce bütün isimleri sonra bütün sayıları döndürür.
-  // Böyleyse asker kartlarını ekrandaki soldan-sağa sırayla sayılarla eşleştir.
-  if(units.length>=2 && Object.keys(found).length<Math.ceil(units.length/2)){
-    const nums=numericMatches(source).filter(n=>n.pos>units[0].pos);
-    if(nums.length>=units.length){
-      units.forEach((u,i)=>found[u.id]=nums[i].value);
-    }
+function fillEntries(side,entries,ownerNation){
+  if(side==="attacker"){
+    const nation=ownerNation||atkNation.value;
+    atkNation.value=nation;
+    countsState.attacker={};
+    entries.filter(e=>e.nation===nation).forEach(e=>countsState.attacker[troopKey(e.nation,e.id)]=e.count);
+    renderUnits("attacker");
+    return;
   }
-  return found;
-}
-
-function extractCountsFromText(text,nation){
-  const norm=normalizeOcr(text);
-  const isSpy=norm.includes("kesfedilen birlikler")||norm.includes("casuslama");
-  return {
-    mode:isSpy?"spy":"city",
-    counts:isSpy?parseSpyReport(text,nation):parseCityArmy(text,nation)
-  };
-}
-
-function fillRecognized(side,nation,counts){
-  const nationSelect=side==="attacker"?atkNation:defNation;
-  nationSelect.value=nation;
-  renderUnits(side);
-  Object.entries(counts).forEach(([id,value])=>{
-    const input=document.querySelector('input[data-side="'+side+'"][data-unit="'+id+'"]');
-    if(input)input.value=String(value);
+  countsState.defender={};
+  entries.forEach(e=>{
+    if(e.id==="casus")return;
+    countsState.defender[troopKey(e.nation,e.id)]=e.count;
   });
+  if(ownerNation)defNation.value=ownerNation;
+  const nations=[...new Set(entries.filter(e=>e.id!=="casus").map(e=>e.nation))];
+  defTroopNation.value=nations[0]||defNation.value;
+  renderUnits("defender");
+  updateMixSummary();
 }
 
 async function scanArmyImage(file,side){
@@ -338,7 +305,6 @@ async function scanArmyImage(file,side){
   }
   status.classList.remove("error","success");
   status.textContent="Görsel okunuyor… %0";
-
   try{
     const result=await window.Tesseract.recognize(file,"tur+eng",{
       logger:m=>{
@@ -348,21 +314,23 @@ async function scanArmyImage(file,side){
       }
     });
     const text=result&&result.data?result.data.text||"":"";
-    const nation=detectNation(text)||(side==="attacker"?atkNation.value:defNation.value);
-    const parsed=extractCountsFromText(text,nation);
-    const counts=parsed.counts;
-    const recognized=Object.keys(counts).length;
+    const norm=normalizeOcr(text);
+    const isSpy=norm.includes("kesfedilen birlikler")||norm.includes("casuslama");
+    const fallback=side==="attacker"?atkNation.value:defNation.value;
+    const owner=dominantNationFromText(text,fallback);
+    const entries=isSpy
+      ?parseMixedNamedCounts(text,owner,true)
+      :parseCityArmy(text,owner);
 
-    if(!recognized){
+    if(!entries.length){
       status.textContent="Asker sayısı okunamadı. Daha net/kırpılmış görsel dene.";
       status.classList.add("error");
       return;
     }
-
-    fillRecognized(side,nation,counts);
-    status.textContent=parsed.mode==="spy"
-      ? recognized+" savunma birliği dolduruldu · Casus atlandı."
-      : recognized+" birlik otomatik dolduruldu.";
+    fillEntries(side,entries,owner);
+    status.textContent=isSpy
+      ?entries.length+" savunma birliği dolduruldu · Casus atlandı."
+      :entries.length+" birlik otomatik dolduruldu.";
     status.classList.add("success");
   }catch(err){
     status.textContent="Görsel okunurken hata oluştu.";
@@ -372,144 +340,140 @@ async function scanArmyImage(file,side){
 
 const attackerImage=$("attackerImage");
 const defenderImage=$("defenderImage");
-if(attackerImage) attackerImage.addEventListener("change",e=>{
+if(attackerImage)attackerImage.addEventListener("change",e=>{
   scanArmyImage(e.target.files&&e.target.files[0],"attacker");
   e.target.value="";
 });
-if(defenderImage) defenderImage.addEventListener("change",e=>{
+if(defenderImage)defenderImage.addEventListener("change",e=>{
   scanArmyImage(e.target.files&&e.target.files[0],"defender");
   e.target.value="";
 });
 
-function army(side,nation){
-  const counts={};
-  let total=0;
+function syncVisible(side){
   document.querySelectorAll('input[data-side="'+side+'"]').forEach(i=>{
-    const v=clamp(i.value);
-    i.value=v;
-    counts[i.dataset.unit]=v;
-    total+=v;
+    const value=clamp(i.value);
+    i.value=value;
+    countsState[side][troopKey(i.dataset.nation,i.dataset.unit)]=value;
   });
-  return{nation,units:unitsFor(nation),counts,total}
 }
-
+function makeTroopsFromState(side,ownerNation){
+  syncVisible(side);
+  const troops=[];
+  Object.entries(countsState[side]).forEach(([key,count])=>{
+    if(!count)return;
+    const split=key.indexOf(":");
+    const nation=key.slice(0,split),id=key.slice(split+1);
+    const unit=unitFor(nation,id);
+    if(unit)troops.push({key,nation,id,unit,count});
+  });
+  return {
+    ownerNation,
+    troops,
+    total:troops.reduce((s,t)=>s+t.count,0)
+  };
+}
+function attackerArmy(){
+  clearAttackerOtherNations();
+  return makeTroopsFromState("attacker",atkNation.value);
+}
+function defenderArmy(){
+  return makeTroopsFromState("defender",defNation.value);
+}
 function cavalryRatio(a){
   if(!a.total)return 0;
-  return a.units.reduce((sum,u)=>sum+(u.type==="cavalry"?(a.counts[u.id]||0):0),0)/a.total
+  const cavalry=a.troops.reduce((sum,t)=>sum+(t.unit.type==="cavalry"?t.count:0),0);
+  return cavalry/a.total
 }
-
 function attackPower(a){
-  return a.units.reduce((sum,u)=>sum+(a.counts[u.id]||0)*u.attack,0)
+  return a.troops.reduce((sum,t)=>sum+t.count*t.unit.attack,0)
 }
-
 function defensePower(d,a,wall){
   const r=cavalryRatio(a);
-  let power=d.units.reduce((sum,u)=>{
-    const effective=u.infDef*(1-r)+u.cavDef*r;
-    return sum+(d.counts[u.id]||0)*effective;
+  const base=d.troops.reduce((sum,t)=>{
+    const effective=t.unit.infDef*(1-r)+t.unit.cavDef*r;
+    return sum+t.count*effective;
   },0);
-  const wallPerLevel=WALL_BONUS[d.nation]??WALL_BONUS.gokturk;
-  return power*(1+wallPerLevel*wall)
+  const wallPerLevel=WALL_BONUS[d.ownerNation]??WALL_BONUS.gokturk;
+  const nationDefense=RULESET.nationDefenseMultiplier[d.ownerNation]??1;
+  return base*(1+wallPerLevel*wall)*nationDefense
 }
-
 function winnerLossRate(powerRatio){
-  // Official update anchors:
-  // 1x≈95%, 2x≈35%, 3x≈19%, 5x≈9%, 10x≈3%, 20x≈1%.
-  // Log-log interpolation keeps the curve smooth while matching all published points.
-  const anchors=[
-    [1,.95],[2,.35],[3,.19],[5,.09],[10,.03],[20,.01]
-  ];
+  const anchors=RULESET.lossAnchors;
   const r=Math.max(1,Number(powerRatio)||1);
   if(r<=1)return .95;
   for(let i=0;i<anchors.length-1;i++){
-    const [r1,l1]=anchors[i];
-    const [r2,l2]=anchors[i+1];
+    const [r1,l1]=anchors[i], [r2,l2]=anchors[i+1];
     if(r<=r2){
       const t=(Math.log(r)-Math.log(r1))/(Math.log(r2)-Math.log(r1));
       return Math.exp(Math.log(l1)+t*(Math.log(l2)-Math.log(l1)));
     }
   }
-  const [r1,l1]=anchors[anchors.length-2];
-  const [r2,l2]=anchors[anchors.length-1];
+  const [r1,l1]=anchors[anchors.length-2], [r2,l2]=anchors[anchors.length-1];
   const slope=(Math.log(l2)-Math.log(l1))/(Math.log(r2)-Math.log(r1));
-  return Math.max(0,Math.exp(Math.log(l2)+slope*(Math.log(r)-Math.log(r2))));
+  return Math.max(0,Math.exp(Math.log(l2)+slope*(Math.log(r)-Math.log(r2))))
 }
-
 function distributeByRatio(a,lossRate){
   const out={};
   const rate=Math.max(0,Math.min(1,lossRate));
-  a.units.forEach(u=>{
-    const count=a.counts[u.id]||0;
-    out[u.id]=rate>=1?count:Math.min(count,Math.round(count*rate));
-  });
+  a.troops.forEach(t=>out[t.key]=rate>=1?t.count:Math.min(t.count,Math.round(t.count*rate)));
   return out
 }
 
-const fmt=n=>new Intl.NumberFormat("tr-TR").format(n);
-
+const fmt=n=>new Intl.NumberFormat("tr-TR").format(Math.round(n));
 function render(id,a,losses){
   const host=$(id);
   host.innerHTML="";
-  const active=a.units.filter(u=>(a.counts[u.id]||0)>0);
-  if(!active.length){
+  if(!a.troops.length){
     const e=document.createElement("div");
     e.className="report-empty";
     e.textContent="Asker girilmedi.";
     host.appendChild(e);
-    return
+    return;
   }
-
-  active.forEach(u=>{
-    const sent=a.counts[u.id]||0;
-    const dead=losses[u.id]||0;
-
+  a.troops.forEach(t=>{
     const card=document.createElement("article");
     card.className="report-card";
-
     const art=document.createElement("div");
     art.className="report-art";
     art.setAttribute("role","img");
-    art.setAttribute("aria-label",u.name);
-    const sprite=spriteStyle(u);
+    art.setAttribute("aria-label",t.unit.name);
+    const sprite=spriteStyle(t.unit);
     art.style.backgroundImage=sprite.image;
     art.style.backgroundSize=sprite.size;
     art.style.backgroundPosition=sprite.posX+" "+sprite.posY;
-    art.style.aspectRatio=u.sheet==="gokturk"?"2 / 3":"8 / 11";
+    art.style.aspectRatio=t.unit.sheet==="gokturk"?"2 / 3":"8 / 11";
 
     const name=document.createElement("div");
     name.className="report-name";
-    name.textContent=u.name;
+    name.textContent=t.unit.name+(a.troops.some(x=>x.id===t.id&&x.nation!==t.nation)?" · "+NATION_LABEL[t.nation]:"");
 
-    const sentLine=document.createElement("div");
-    sentLine.className="report-line";
-    sentLine.append("Giden ");
-    const sentStrong=document.createElement("strong");
-    sentStrong.textContent=fmt(sent);
-    sentLine.appendChild(sentStrong);
+    const sent=document.createElement("div");
+    sent.className="report-line";
+    sent.append("Giden ");
+    const s=document.createElement("strong");s.textContent=fmt(t.count);sent.appendChild(s);
 
-    const deadLine=document.createElement("div");
-    deadLine.className="report-line dead";
-    deadLine.append("Ölen ");
-    const deadStrong=document.createElement("strong");
-    deadStrong.textContent=fmt(dead);
-    deadLine.appendChild(deadStrong);
+    const dead=document.createElement("div");
+    dead.className="report-line dead";
+    dead.append("Ölen ");
+    const d=document.createElement("strong");d.textContent=fmt(losses[t.key]||0);dead.appendChild(d);
 
-    card.append(art,name,sentLine,deadLine);
+    card.append(art,name,sent,dead);
     host.appendChild(card);
-  })
+  });
 }
 
 $("simulateButton").addEventListener("click",()=>{
-  const a=army("attacker",atkNation.value);
-  const d=army("defender",defNation.value);
+  const a=attackerArmy();
+  const d=defenderArmy();
   const wall=clamp(wallLevel.value,0,10);
   wallLevel.value=String(wall);
   if(!a.total||!d.total){
     $("validationMessage").textContent="İki tarafa da en az bir asker girmen gerekiyor.";
     $("winnerText").textContent="İki tarafa da en az bir asker gir.";
+    $("powerSummary").textContent="";
     render("attackerResults",a,{});
     render("defenderResults",d,{});
-    return
+    return;
   }
   $("validationMessage").textContent="";
   const atkPower=attackPower(a);
@@ -521,14 +485,22 @@ $("simulateButton").addEventListener("click",()=>{
   const winLoss=winnerLossRate(ratio);
   const attackerLossRate=attackerWon?winLoss:1;
   const defenderLossRate=attackerWon?1:winLoss;
+
   $("winnerText").textContent=attackerWon?"SALDIRAN KAZANDI":"SAVUNAN KAZANDI";
+  $("powerSummary").textContent=
+    "Baz saldırı "+fmt(atkPower)+" · Baz savunma "+fmt(defPower)+" · Güç oranı "+ratio.toFixed(2)+"×";
+  $("confidenceNote").textContent=RULESET.nationDefenseKnown
+    ?"Targun "+RULESET.id.replace("targun-","")+" kuralları · yağma dahil değil."
+    :"Targun "+RULESET.id.replace("targun-","")+" · yağma dahil değil · ayrı ulus savunma katsayısı kamuya açık olmadığı için 1,00 kabul edildi.";
+
   render("attackerResults",a,distributeByRatio(a,attackerLossRate));
   render("defenderResults",d,distributeByRatio(d,defenderLossRate));
-  $("results").scrollIntoView({behavior:"smooth",block:"start"})
+  $("results").scrollIntoView({behavior:"smooth",block:"start"});
 });
 
 renderUnits("attacker");
 renderUnits("defender");
-render("attackerResults",{units:unitsFor("gokturk"),counts:{},total:0},{});
-render("defenderResults",{units:unitsFor("gokturk"),counts:{},total:0},{});
+updateMixSummary();
+render("attackerResults",{troops:[],total:0},{});
+render("defenderResults",{troops:[],total:0},{});
 })();
