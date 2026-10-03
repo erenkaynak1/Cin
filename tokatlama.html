@@ -3,146 +3,280 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-  <meta name="theme-color" content="#09090b">
+  <meta name="theme-color" content="#030407">
   <title>Sonred Onur Tokatlama</title>
   <style>
-    *{box-sizing:border-box}html{background:#050506}body{margin:0;color:#f2eee9;font-family:system-ui,-apple-system,Segoe UI,sans-serif;background:
-      radial-gradient(circle at 20% 20%,rgba(255,79,33,.16),transparent 25rem),
-      radial-gradient(circle at 80% 20%,rgba(51,126,255,.15),transparent 25rem),
-      linear-gradient(#101115,#050506 70%);min-height:100%}
-    .wrap{width:min(100%,680px);margin:auto;padding:max(12px,env(safe-area-inset-top)) 12px calc(18px + env(safe-area-inset-bottom))}
-    .top{display:grid;grid-template-columns:44px 1fr 44px;align-items:center;gap:8px}.back{width:42px;height:42px;border-radius:50%;display:grid;place-items:center;border:1px solid #3f4248;background:#121318;color:#eee;text-decoration:none;font-size:28px}.title{text-align:center}.title h1{margin:0;font-family:Georgia,serif;font-size:clamp(28px,7vw,44px);letter-spacing:.03em;color:#e7ded2}.title h1 span{display:block;color:#ff4a2e;font:900 clamp(29px,8vw,48px)/.95 system-ui,sans-serif;transform:skew(-4deg)}.title p{margin:6px 0 0;color:#858991;font-size:11px}
-    .hud{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin:12px 0}.hud>div{border:1px solid #333840;border-radius:10px;background:#0d0f12;padding:8px;text-align:center}.hud span{display:block;color:#7f848b;font-size:9px;text-transform:uppercase}.hud strong{display:block;margin-top:3px;font-size:19px}
-    .arena{position:relative;min-height:620px;border:1px solid #2d3036;border-radius:18px;overflow:hidden;background:
-      linear-gradient(90deg,rgba(255,87,31,.09),transparent 35%,transparent 65%,rgba(48,124,255,.09)),
-      radial-gradient(circle at 50% 18%,rgba(255,255,255,.06),transparent 16rem),
-      #090b0e}
-    .arena:before{content:"";position:absolute;inset:auto 0 0;height:32%;background:linear-gradient(transparent,rgba(0,0,0,.72))}
-    .speech{position:absolute;z-index:7;left:50%;top:12%;transform:translate(-50%,-8px) scale(.96);min-width:210px;max-width:78%;padding:11px 14px;border:1px solid #d8a24b;border-radius:12px;background:rgba(9,10,12,.96);color:#f1d189;text-align:center;font-weight:800;opacity:0;pointer-events:none}.speech.show{animation:speak .85s ease}.speech:after{content:"";position:absolute;left:50%;bottom:-8px;width:14px;height:14px;background:#090a0c;border-right:1px solid #d8a24b;border-bottom:1px solid #d8a24b;transform:translateX(-50%) rotate(45deg)}
-    @keyframes speak{0%{opacity:0;transform:translate(-50%,3px) scale(.9)}15%,76%{opacity:1;transform:translate(-50%,0) scale(1)}100%{opacity:0;transform:translate(-50%,-7px) scale(.97)}}
-    .character{position:absolute;left:50%;bottom:28px;width:255px;height:500px;transform:translateX(-50%);transform-origin:50% 82%;transition:filter .15s}.character.hit-left{animation:hitL .42s cubic-bezier(.2,.8,.2,1)}.character.hit-right{animation:hitR .42s cubic-bezier(.2,.8,.2,1)}
-    @keyframes hitL{0%,100%{transform:translateX(-50%) rotate(0)}35%{transform:translateX(-40%) rotate(7deg)}65%{transform:translateX(-54%) rotate(-2deg)}}@keyframes hitR{0%,100%{transform:translateX(-50%) rotate(0)}35%{transform:translateX(-60%) rotate(-7deg)}65%{transform:translateX(-46%) rotate(2deg)}}
-    .head{position:absolute;z-index:4;top:18px;left:50%;width:126px;height:136px;transform:translateX(-50%);border-radius:46% 46% 44% 44%;overflow:hidden;border:2px solid #3a2a20;background:#1a1513}.head img{width:100%;height:100%;object-fit:cover;filter:saturate(.9) contrast(1.02)}
-    .bruise{position:absolute;z-index:6;border-radius:50%;opacity:0;mix-blend-mode:multiply;transition:opacity .15s}.bruise.one{width:34px;height:24px;left:17px;top:65px;background:rgba(89,31,75,.72);transform:rotate(-10deg)}.bruise.two{width:28px;height:20px;right:12px;top:72px;background:rgba(120,35,45,.65);transform:rotate(14deg)}.bruise.three{width:20px;height:10px;left:54px;top:101px;background:rgba(130,34,40,.7)}.damage-1 .bruise.one{opacity:.38}.damage-2 .bruise.one,.damage-2 .bruise.two{opacity:.58}.damage-3 .bruise.one,.damage-3 .bruise.two,.damage-3 .bruise.three{opacity:.78}
-    .neck{position:absolute;top:136px;left:50%;width:46px;height:35px;background:#c8876d;transform:translateX(-50%);border-radius:10px}.torso{position:absolute;z-index:2;top:156px;left:50%;width:190px;height:210px;transform:translateX(-50%);border-radius:38px 38px 24px 24px;background:linear-gradient(90deg,#5d201d,#8d332e 50%,#4b1716);border:1px solid #7a3d35}.torso:before{content:"";position:absolute;inset:14px 52px 0;background:#121214;border-radius:10px 10px 20px 20px}.arm{position:absolute;z-index:1;top:180px;width:54px;height:205px;border-radius:28px;background:linear-gradient(#6f2a27,#421817);border:1px solid #6d3632}.arm.left{left:12px;transform:rotate(9deg)}.arm.right{right:12px;transform:rotate(-9deg)}.pants{position:absolute;z-index:1;left:50%;top:345px;width:162px;height:86px;transform:translateX(-50%);background:#17191d;border-radius:16px}.leg{position:absolute;bottom:0;width:67px;height:190px;background:linear-gradient(#1b1d21,#111215);border-radius:18px}.leg.left{left:50px;transform:rotate(2deg)}.leg.right{right:50px;transform:rotate(-2deg)}.shoe{position:absolute;bottom:-4px;width:77px;height:30px;background:#15100e;border-radius:16px 23px 10px 10px}.leg.left .shoe{left:-16px}.leg.right .shoe{right:-16px}
-    .impact{position:absolute;z-index:8;font-size:48px;opacity:0;pointer-events:none}.impact.left{left:13%;top:38%}.impact.right{right:13%;top:38%}.impact.pop{animation:impact .38s ease}@keyframes impact{0%{opacity:0;transform:scale(.4) rotate(-15deg)}35%{opacity:1;transform:scale(1.2) rotate(8deg)}100%{opacity:0;transform:scale(.9) rotate(0)}}
-    .controls{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:12px}.slap{min-height:72px;border-radius:18px;border:2px solid;font-weight:900;font-size:18px;letter-spacing:.04em;color:#fff}.slap.left{border-color:#ff5b32;background:radial-gradient(circle at 50% 30%,#ff6d45,#a91f12)}.slap.right{border-color:#56a2ff;background:radial-gradient(circle at 50% 30%,#448fff,#153f91)}.slap:active{transform:translateY(2px) scale(.985)}.reset{display:block;margin:10px auto 0;border:1px solid #3b3f45;border-radius:999px;background:#111319;color:#999;padding:8px 14px;font-size:11px}
-    .bar{height:8px;margin-top:5px;border-radius:999px;background:#22262c;overflow:hidden}.bar i{display:block;height:100%;width:0;background:linear-gradient(90deg,#f0bf4d,#f05a2c);transition:width .2s}
-    footer{text-align:center;color:#494d53;font-size:10px;padding-top:10px}
-    @media(max-width:420px){.arena{min-height:570px}.character{transform:translateX(-50%) scale(.88);transform-origin:50% 100%;bottom:10px}.character.hit-left{animation:hitLs .42s cubic-bezier(.2,.8,.2,1)}.character.hit-right{animation:hitRs .42s cubic-bezier(.2,.8,.2,1)}@keyframes hitLs{0%,100%{transform:translateX(-50%) scale(.88) rotate(0)}35%{transform:translateX(-40%) scale(.88) rotate(7deg)}65%{transform:translateX(-54%) scale(.88) rotate(-2deg)}}@keyframes hitRs{0%,100%{transform:translateX(-50%) scale(.88) rotate(0)}35%{transform:translateX(-60%) scale(.88) rotate(-7deg)}65%{transform:translateX(-46%) scale(.88) rotate(2deg)}}}
+    *{box-sizing:border-box}
+    html,body{margin:0;background:#020305;color:#fff;font-family:system-ui,-apple-system,Segoe UI,sans-serif}
+    body{min-height:100%;display:flex;justify-content:center}
+    .game{width:min(100%,520px);padding:0;margin:0 auto}
+    .stage{
+      position:relative;
+      width:100%;
+      aspect-ratio:420/746;
+      overflow:hidden;
+      background:
+        radial-gradient(circle at 25% 35%,rgba(255,79,24,.16),transparent 35%),
+        radial-gradient(circle at 75% 35%,rgba(34,112,255,.16),transparent 35%),
+        #07080b;
+      touch-action:manipulation;
+      user-select:none;
+      -webkit-user-select:none;
+    }
+    .scene{
+      position:absolute;inset:0;
+      width:100%;height:100%;object-fit:cover;
+      transform-origin:50% 42%;
+      transition:filter .12s ease;
+      pointer-events:none;
+    }
+    .scene.hit-left{animation:sceneLeft .34s cubic-bezier(.2,.9,.25,1)}
+    .scene.hit-right{animation:sceneRight .34s cubic-bezier(.2,.9,.25,1)}
+    @keyframes sceneLeft{
+      0%,100%{transform:translateX(0) rotate(0)}
+      30%{transform:translateX(2.2%) rotate(1.1deg)}
+      62%{transform:translateX(-.8%) rotate(-.3deg)}
+    }
+    @keyframes sceneRight{
+      0%,100%{transform:translateX(0) rotate(0)}
+      30%{transform:translateX(-2.2%) rotate(-1.1deg)}
+      62%{transform:translateX(.8%) rotate(.3deg)}
+    }
+    .loading{
+      position:absolute;inset:0;display:grid;place-items:center;
+      color:#c99b55;font-weight:800;font-size:13px;letter-spacing:.04em;
+      background:linear-gradient(#0c0d10,#040506);
+      z-index:2;
+    }
+    .loading.hidden{display:none}
+
+    .tap{
+      position:absolute;z-index:10;top:76.5%;height:22%;
+      border:0;background:transparent;border-radius:20%;
+      -webkit-tap-highlight-color:transparent;
+      cursor:pointer;
+    }
+    .tap.left{left:1.2%;width:47.2%}
+    .tap.right{right:1.2%;width:47.2%}
+    .tap:focus-visible{outline:3px solid rgba(255,255,255,.8);outline-offset:-6px}
+    .tap.left.pressed{background:radial-gradient(circle,rgba(255,79,23,.26),transparent 67%)}
+    .tap.right.pressed{background:radial-gradient(circle,rgba(53,137,255,.26),transparent 67%)}
+
+    .back{
+      position:absolute;z-index:12;left:1.8%;top:1.1%;width:11%;aspect-ratio:1;
+      border:0;border-radius:50%;background:transparent;
+      text-indent:-9999px;overflow:hidden;
+    }
+
+    .speech{
+      position:absolute;z-index:15;left:50%;top:27.5%;
+      transform:translate(-50%,-8px) scale(.94);
+      width:max-content;max-width:72%;
+      padding:8px 11px;
+      border:1px solid rgba(232,174,83,.9);
+      border-radius:10px;
+      background:rgba(10,9,8,.94);
+      color:#ffe0a3;
+      box-shadow:0 4px 16px rgba(0,0,0,.45);
+      text-align:center;
+      font-size:clamp(10px,3vw,15px);
+      font-weight:850;
+      opacity:0;pointer-events:none;
+    }
+    .speech.show{animation:speech .82s ease}
+    .speech:after{
+      content:"";position:absolute;left:50%;bottom:-5px;width:9px;height:9px;
+      background:#0a0908;border-right:1px solid rgba(232,174,83,.9);
+      border-bottom:1px solid rgba(232,174,83,.9);
+      transform:translateX(-50%) rotate(45deg);
+    }
+    @keyframes speech{
+      0%{opacity:0;transform:translate(-50%,5px) scale(.9)}
+      14%,76%{opacity:1;transform:translate(-50%,0) scale(1)}
+      100%{opacity:0;transform:translate(-50%,-7px) scale(.97)}
+    }
+
+    .impact{
+      position:absolute;z-index:14;top:33%;font-size:clamp(27px,8vw,46px);
+      opacity:0;pointer-events:none;filter:drop-shadow(0 0 8px rgba(255,191,72,.8));
+    }
+    .impact.left{left:31%}.impact.right{right:28%}
+    .impact.pop{animation:impact .34s ease}
+    @keyframes impact{
+      0%{opacity:0;transform:scale(.25) rotate(-18deg)}
+      38%{opacity:1;transform:scale(1.2) rotate(8deg)}
+      100%{opacity:0;transform:scale(.75) rotate(0)}
+    }
+
+    .bruise{position:absolute;z-index:8;pointer-events:none;opacity:0;transition:opacity .2s}
+    .bruise.a{
+      left:46.6%;top:31.2%;width:5.2%;height:2.6%;border-radius:50%;
+      background:radial-gradient(ellipse,rgba(76,28,90,.72),rgba(124,26,48,.28) 56%,transparent 76%);
+      transform:rotate(-13deg);
+    }
+    .bruise.b{
+      left:52.1%;top:31.8%;width:4.8%;height:2.5%;border-radius:50%;
+      background:radial-gradient(ellipse,rgba(101,24,53,.72),rgba(75,32,91,.25) 58%,transparent 78%);
+      transform:rotate(11deg);
+    }
+    .bruise.c{
+      left:50.3%;top:34.4%;width:4.2%;height:.55%;
+      background:rgba(128,24,29,.75);border-radius:999px;transform:rotate(-18deg);
+    }
+    .stage.damage-1 .bruise.a{opacity:.58}
+    .stage.damage-2 .bruise.a,.stage.damage-2 .bruise.b{opacity:.76}
+    .stage.damage-3 .bruise.a,.stage.damage-3 .bruise.b,.stage.damage-3 .bruise.c{opacity:.9}
+
+    .status-frame{
+      position:absolute;z-index:9;left:76.3%;width:21.8%;
+      border:2px solid transparent;border-radius:5px;
+      pointer-events:none;opacity:0;transition:.18s;
+      box-shadow:0 0 14px transparent;
+    }
+    .status-frame.active{opacity:1;border-color:#ffd36d;box-shadow:0 0 12px rgba(255,179,50,.65)}
+    .status-frame.normal{top:21.4%;height:13.9%}
+    .status-frame.light{top:36.4%;height:14.4%}
+    .status-frame.heavy{top:51.6%;height:14.7%}
+
+    .num{
+      position:absolute;z-index:11;left:20.7%;width:7.7%;
+      display:grid;place-items:center;
+      background:#151517;color:#fff;
+      font-family:Georgia,serif;font-weight:900;
+      font-size:clamp(13px,4vw,22px);
+      line-height:1;border-radius:2px;
+      pointer-events:none;
+    }
+    .num.hits{top:50.6%;height:3.3%}
+    .num.combo{top:55.6%;height:3.3%}
+    .damage-cover{
+      position:absolute;z-index:11;left:6.2%;top:62.4%;width:19.7%;height:1.65%;
+      background:#171719;border-radius:2px;overflow:hidden;pointer-events:none;
+    }
+    .damage-fill{
+      height:100%;width:0%;
+      background:linear-gradient(90deg,#ff2a17,#ff5b17 48%,#ffc03b);
+      transition:width .18s ease;
+    }
+    .flash{
+      position:absolute;z-index:13;inset:0;background:rgba(255,255,255,.14);
+      opacity:0;pointer-events:none;
+    }
+    .flash.go{animation:flash .15s ease}
+    @keyframes flash{0%{opacity:.6}100%{opacity:0}}
+
+    .hint{
+      position:absolute;z-index:12;left:50%;bottom:.6%;transform:translateX(-50%);
+      color:rgba(255,255,255,.34);font-size:8px;letter-spacing:.06em;
+      pointer-events:none;
+    }
+    @media (prefers-reduced-motion:reduce){
+      .scene.hit-left,.scene.hit-right,.impact.pop,.speech.show,.flash.go{animation-duration:.01ms}
+    }
   </style>
 </head>
 <body>
-  <main class="wrap">
-    <header class="top">
-      <a class="back" href="index.html" aria-label="Ana ekrana dön">‹</a>
-      <div class="title">
-        <h1>SONRED ONUR <span>TOKATLAMA</span></h1>
-        <p>Sol ve sağ tokatlarla kombo yap.</p>
-      </div>
-      <span></span>
-    </header>
+  <main class="game">
+    <section id="stage" class="stage" aria-label="Sonred Onur Tokatlama oyunu">
+      <div id="loading" class="loading">SAHNE YÜKLENİYOR…</div>
+      <img id="scene" class="scene" alt="Sonred Onur Tokatlama oyun sahnesi">
 
-    <section class="hud" aria-label="Oyun istatistikleri">
-      <div><span>Tokat</span><strong id="hitCount">0</strong></div>
-      <div><span>Kombo</span><strong id="comboCount">0</strong></div>
-      <div><span>Hasar</span><div class="bar"><i id="damageBar"></i></div></div>
-    </section>
+      <a class="back" href="index.html" aria-label="Ana ekrana dön">Geri</a>
 
-    <section class="arena">
       <div id="speech" class="speech" aria-live="polite">Eren abi özür dilerim!</div>
       <div id="impactLeft" class="impact left">💥</div>
       <div id="impactRight" class="impact right">💥</div>
+      <div class="bruise a"></div>
+      <div class="bruise b"></div>
+      <div class="bruise c"></div>
+      <div id="flash" class="flash"></div>
 
-      <div id="character" class="character">
-        <div class="arm left"></div><div class="arm right"></div>
-        <div class="neck"></div>
-        <div id="head" class="head">
-          <img alt="Sonred Onur karakteri" src="data:image/jpeg;base64,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">
-          <span class="bruise one"></span>
-          <span class="bruise two"></span>
-          <span class="bruise three"></span>
-        </div>
-        <div class="torso"></div>
-        <div class="pants"></div>
-        <div class="leg left"><span class="shoe"></span></div>
-        <div class="leg right"><span class="shoe"></span></div>
-      </div>
+      <div id="normalFrame" class="status-frame normal active"></div>
+      <div id="lightFrame" class="status-frame light"></div>
+      <div id="heavyFrame" class="status-frame heavy"></div>
+
+      <div id="hitCount" class="num hits">0</div>
+      <div id="comboCount" class="num combo">0</div>
+      <div class="damage-cover"><div id="damageFill" class="damage-fill"></div></div>
+
+      <button id="leftSlap" class="tap left" type="button" aria-label="Sol tokat"></button>
+      <button id="rightSlap" class="tap right" type="button" aria-label="Sağ tokat"></button>
+      <span class="hint">Butonlara dokun</span>
     </section>
-
-    <div class="controls">
-      <button id="leftSlap" class="slap left" type="button">✋ SOL TOKAT</button>
-      <button id="rightSlap" class="slap right" type="button">SAĞ TOKAT 🤚</button>
-    </div>
-    <button id="resetGame" class="reset" type="button">Sıfırla</button>
-    <footer>By SPQR-Eren</footer>
   </main>
 
   <script>
-    (() => {
-      const character = document.getElementById("character");
-      const head = document.getElementById("head");
-      const speech = document.getElementById("speech");
-      const hitCount = document.getElementById("hitCount");
-      const comboCount = document.getElementById("comboCount");
-      const damageBar = document.getElementById("damageBar");
-      const impactLeft = document.getElementById("impactLeft");
-      const impactRight = document.getElementById("impactRight");
-      let hits = 0;
-      let combo = 0;
-      let comboTimer = 0;
+  (() => {
+    const stage=document.getElementById("stage");
+    const scene=document.getElementById("scene");
+    const loading=document.getElementById("loading");
+    const speech=document.getElementById("speech");
+    const hitCount=document.getElementById("hitCount");
+    const comboCount=document.getElementById("comboCount");
+    const damageFill=document.getElementById("damageFill");
+    const flash=document.getElementById("flash");
+    const normalFrame=document.getElementById("normalFrame");
+    const lightFrame=document.getElementById("lightFrame");
+    const heavyFrame=document.getElementById("heavyFrame");
+    const left=document.getElementById("leftSlap");
+    const right=document.getElementById("rightSlap");
+    let hits=0,combo=0,comboTimer=0,animTimer=0;
 
-      function restartClass(node, cls){
-        node.classList.remove(cls);
-        void node.offsetWidth;
-        node.classList.add(cls);
-      }
+    function b64ToBlobUrl(b64){
+      const raw=atob(b64);
+      const bytes=new Uint8Array(raw.length+2);
+      for(let i=0;i<raw.length;i++) bytes[i]=raw.charCodeAt(i);
+      bytes[raw.length]=0xff; bytes[raw.length+1]=0xd9;
+      return URL.createObjectURL(new Blob([bytes],{type:"image/jpeg"}));
+    }
 
-      function updateDamage(){
-        const stage = hits >= 12 ? 3 : hits >= 7 ? 2 : hits >= 3 ? 1 : 0;
-        head.classList.remove("damage-1","damage-2","damage-3");
-        if(stage) head.classList.add("damage-" + stage);
-        damageBar.style.width = Math.min(100, hits * 6) + "%";
-      }
+    Promise.all([0,1,2,3,4].map(i=>
+      fetch("assets/tokat-bg-"+String(i).padStart(2,"0")+".txt?v=20261003-stage1")
+        .then(r=>{if(!r.ok)throw new Error("asset");return r.text()})
+    )).then(parts=>{
+      scene.onload=()=>loading.classList.add("hidden");
+      scene.src=b64ToBlobUrl(parts.join("").trim());
+    }).catch(()=>{
+      loading.textContent="Sahne yüklenemedi. Sayfayı yenile.";
+    });
 
-      function saySorry(){
-        speech.textContent = "Eren abi özür dilerim!";
-        restartClass(speech, "show");
-      }
+    function restart(node,cls){
+      node.classList.remove(cls); void node.offsetWidth; node.classList.add(cls);
+    }
+    function updateState(){
+      const level=hits>=12?3:hits>=6?2:hits>=2?1:0;
+      stage.classList.remove("damage-1","damage-2","damage-3");
+      if(level)stage.classList.add("damage-"+level);
+      normalFrame.classList.toggle("active",level===0);
+      lightFrame.classList.toggle("active",level===1);
+      heavyFrame.classList.toggle("active",level>=2);
+      hitCount.textContent=String(hits);
+      comboCount.textContent=String(combo);
+      damageFill.style.width=Math.min(100,hits*7)+"%";
+    }
+    function slap(side){
+      hits++; combo++;
+      updateState();
+      restart(speech,"show");
+      restart(flash,"go");
+      const impact=side==="left"?document.getElementById("impactLeft"):document.getElementById("impactRight");
+      restart(impact,"pop");
+      const cls=side==="left"?"hit-left":"hit-right";
+      clearTimeout(animTimer);
+      restart(scene,cls);
+      animTimer=setTimeout(()=>scene.classList.remove(cls),370);
 
-      function slap(side){
-        hits += 1;
-        combo += 1;
-        hitCount.textContent = String(hits);
-        comboCount.textContent = String(combo);
-        updateDamage();
-        saySorry();
+      const btn=side==="left"?left:right;
+      btn.classList.add("pressed");
+      setTimeout(()=>btn.classList.remove("pressed"),130);
 
-        const cls = side === "left" ? "hit-left" : "hit-right";
-        restartClass(character, cls);
-        setTimeout(() => character.classList.remove(cls), 440);
-
-        const impact = side === "left" ? impactLeft : impactRight;
-        restartClass(impact, "pop");
-
-        clearTimeout(comboTimer);
-        comboTimer = setTimeout(() => {
-          combo = 0;
-          comboCount.textContent = "0";
-        }, 1800);
-      }
-
-      document.getElementById("leftSlap").addEventListener("click", () => slap("left"));
-      document.getElementById("rightSlap").addEventListener("click", () => slap("right"));
-      document.getElementById("resetGame").addEventListener("click", () => {
-        hits = 0; combo = 0;
-        hitCount.textContent = "0";
-        comboCount.textContent = "0";
-        head.classList.remove("damage-1","damage-2","damage-3");
-        damageBar.style.width = "0%";
-        speech.classList.remove("show");
-      });
-    })();
+      if(navigator.vibrate) navigator.vibrate(20);
+      clearTimeout(comboTimer);
+      comboTimer=setTimeout(()=>{combo=0;comboCount.textContent="0"},1700);
+    }
+    left.addEventListener("click",()=>slap("left"));
+    right.addEventListener("click",()=>slap("right"));
+  })();
   </script>
 </body>
 </html>
