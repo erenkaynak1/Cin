@@ -1,7 +1,5 @@
 (()=>{
 const WALL_BONUS={gokturk:.04,selcuk:.035,hun:.03};
-const LOSS_EXPONENT=1.148;
-const CASUALTY_WEIGHT_BLEND=.01;
 
 const COMMON={
   mancinik:{id:"mancinik",name:"Mancınık",attack:90,infDef:45,cavDef:130,speed:50,carry:0,type:"siege",sheet:"gokturk",sprite:7},
@@ -401,16 +399,7 @@ function cavalryRatio(a){
 }
 
 function attackPower(a){
-  let power=a.units.reduce((sum,u)=>sum+(a.counts[u.id]||0)*u.attack,0);
-  const kem=a.units.find(u=>u.id==="kemankes");
-  if(kem){
-    const kemCount=a.counts.kemankes||0;
-    const foot=a.units
-      .filter(u=>u.type==="infantry")
-      .reduce((sum,u)=>sum+(a.counts[u.id]||0),0);
-    power+=Math.min(kemCount,foot)*kem.attack;
-  }
-  return power
+  return a.units.reduce((sum,u)=>sum+(a.counts[u.id]||0)*u.attack,0)
 }
 
 function defensePower(d,a,wall){
@@ -419,73 +408,40 @@ function defensePower(d,a,wall){
     const effective=u.infDef*(1-r)+u.cavDef*r;
     return sum+(d.counts[u.id]||0)*effective;
   },0);
-  let numberBonus=0;
-  if(a.total&&d.total>a.total)numberBonus=Math.min(.20,((d.total/a.total)-1)*.10);
   const wallPerLevel=WALL_BONUS[d.nation]??WALL_BONUS.gokturk;
-  return power*(1+wallPerLevel*wall)*(1+numberBonus)
+  return power*(1+wallPerLevel*wall)
 }
 
-function typeMult(u,side){
-  if(side==="attacker"){
-    if(u.type==="siege")return 1.5;
-    if(u.id==="kemankes")return 1.15;
-    if(u.type==="cavalry")return .85;
-    return 1
-  }
-  if(u.type==="siege")return 1.25;
-  if(u.type==="cavalry")return .9;
-  return 1
-}
-
-function distribute(a,e,totalLoss,side){
-  const out={};
-  a.units.forEach(u=>out[u.id]=0);
-  if(totalLoss<=0||a.total<=0)return out;
-  if(totalLoss>=a.total){
-    a.units.forEach(u=>out[u.id]=a.counts[u.id]||0);
-    return out
-  }
-
-  // Gerçek savaş raporunda normal birlikler toplam kayıp oranını neredeyse
-  // bire bir takip ediyor. Tür/savunma ağırlığını yalnızca küçük bir düzeltme
-  // olarak kullanıyoruz; böylece kuşatma/Kemankeş/süvari farkı korunuyor ama
-  // kayıp dağılımı yapay biçimde aşırı sapmıyor.
-  const enemyCav=cavalryRatio(e);
-  const rows=a.units.map(u=>{
-    const count=a.counts[u.id]||0;
-    const defense=Math.max(1,u.infDef*(1-enemyCav)+u.cavDef*enemyCav);
-    return{id:u.id,count,weighted:count*(typeMult(u,side)/defense)}
-  });
-  const totalWeighted=rows.reduce((sum,x)=>sum+x.weighted,0);
-  const totalCount=rows.reduce((sum,x)=>sum+x.count,0);
-  if(!totalCount)return out;
-
-  let assigned=0;
-  const remainder=[];
-  rows.forEach(x=>{
-    const uniformShare=x.count/totalCount;
-    const weightedShare=totalWeighted?x.weighted/totalWeighted:uniformShare;
-    const share=uniformShare*(1-CASUALTY_WEIGHT_BLEND)+weightedShare*CASUALTY_WEIGHT_BLEND;
-    const exact=totalLoss*share;
-    const base=Math.min(x.count,Math.floor(exact));
-    out[x.id]=base;
-    assigned+=base;
-    remainder.push({id:x.id,cap:x.count,r:exact-Math.floor(exact)})
-  });
-
-  remainder.sort((a,b)=>b.r-a.r);
-  while(assigned<totalLoss){
-    let moved=false;
-    for(const x of remainder){
-      if(assigned>=totalLoss)break;
-      if(out[x.id]<x.cap){
-        out[x.id]++;
-        assigned++;
-        moved=true
-      }
+function winnerLossRate(powerRatio){
+  // Official update anchors:
+  // 1x≈95%, 2x≈35%, 3x≈19%, 5x≈9%, 10x≈3%, 20x≈1%.
+  // Log-log interpolation keeps the curve smooth while matching all published points.
+  const anchors=[
+    [1,.95],[2,.35],[3,.19],[5,.09],[10,.03],[20,.01]
+  ];
+  const r=Math.max(1,Number(powerRatio)||1);
+  if(r<=1)return .95;
+  for(let i=0;i<anchors.length-1;i++){
+    const [r1,l1]=anchors[i];
+    const [r2,l2]=anchors[i+1];
+    if(r<=r2){
+      const t=(Math.log(r)-Math.log(r1))/(Math.log(r2)-Math.log(r1));
+      return Math.exp(Math.log(l1)+t*(Math.log(l2)-Math.log(l1)));
     }
-    if(!moved)break
   }
+  const [r1,l1]=anchors[anchors.length-2];
+  const [r2,l2]=anchors[anchors.length-1];
+  const slope=(Math.log(l2)-Math.log(l1))/(Math.log(r2)-Math.log(r1));
+  return Math.max(0,Math.exp(Math.log(l2)+slope*(Math.log(r)-Math.log(r2))));
+}
+
+function distributeByRatio(a,lossRate){
+  const out={};
+  const rate=Math.max(0,Math.min(1,lossRate));
+  a.units.forEach(u=>{
+    const count=a.counts[u.id]||0;
+    out[u.id]=rate>=1?count:Math.min(count,Math.round(count*rate));
+  });
   return out
 }
 
@@ -560,14 +516,14 @@ $("simulateButton").addEventListener("click",()=>{
   const defPower=defensePower(d,a,wall);
   const attackerWon=atkPower>defPower;
   const strong=Math.max(atkPower,defPower);
-  const weak=Math.min(atkPower,defPower);
-  const base=(weak**LOSS_EXPONENT)/((weak**LOSS_EXPONENT)+(strong**LOSS_EXPONENT));
-  const winnerLossRate=Math.min(.90,Math.max(0,base));
-  const attackerLoss=attackerWon?Math.round(a.total*winnerLossRate):a.total;
-  const defenderLoss=attackerWon?d.total:Math.round(d.total*winnerLossRate);
+  const weak=Math.max(1,Math.min(atkPower,defPower));
+  const ratio=strong/weak;
+  const winLoss=winnerLossRate(ratio);
+  const attackerLossRate=attackerWon?winLoss:1;
+  const defenderLossRate=attackerWon?1:winLoss;
   $("winnerText").textContent=attackerWon?"SALDIRAN KAZANDI":"SAVUNAN KAZANDI";
-  render("attackerResults",a,distribute(a,d,attackerLoss,"attacker"));
-  render("defenderResults",d,distribute(d,a,defenderLoss,"defender"));
+  render("attackerResults",a,distributeByRatio(a,attackerLossRate));
+  render("defenderResults",d,distributeByRatio(d,defenderLossRate));
   $("results").scrollIntoView({behavior:"smooth",block:"start"})
 });
 
