@@ -41,7 +41,7 @@
 <script>
 (() => {
   // Supabase Edge Function bağlandığında bu tek adres güncellenecek.
-  const API_BASE = window.EMPTY_ACCOUNTS_API || "";
+  const API_BASE = window.EMPTY_ACCOUNTS_API || "https://layfxnbzavpxmzisghif.supabase.co/functions/v1/empty-accounts";
   const list = document.getElementById("list");
   const status = document.getElementById("status");
   const form = document.getElementById("addForm");
