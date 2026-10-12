@@ -124,7 +124,7 @@ Deno.serve(async (req: Request) => {
 
       if (error) {
         if (error.code === "23505") {
-          return json({ error: "Bu isim zaten listede." }, 409, origin);
+          return json({ error: "Bu oyuncu zaten listede aşkım" }, 409, origin);
         }
         throw error;
       }
