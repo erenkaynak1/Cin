@@ -273,3 +273,16 @@ footer{text-align:right;color:#55585d;padding:16px 4px 2px;font-size:11px}
 .home-toast.show{opacity:1;transform:translate(-50%,0)}
 
 .home-extra-button{text-decoration:none;display:grid;place-items:center;text-align:center}
+
+
+.home-empty-accounts{
+  top:89.25%;
+  border-color:rgba(88,150,104,.55);
+  background:linear-gradient(180deg,rgba(26,38,30,.97),rgba(13,20,16,.99));
+  color:#d8e6d8;
+}
+.home-empty-accounts:active{
+  border-color:rgba(112,190,132,.8);
+  color:#dff7e4;
+  background:linear-gradient(180deg,rgba(34,52,40,.98),rgba(16,27,20,.99));
+}
