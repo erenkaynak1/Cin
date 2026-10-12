@@ -145,19 +145,19 @@ Deno.serve(async (req: Request) => {
 
       const { error } = await supabase
         .from("empty_account_votes")
-        .insert({ entry_id: entryId, ip_hash: hash, vote });
+        .upsert(
+          { entry_id: entryId, ip_hash: hash, vote },
+          { onConflict: "entry_id,ip_hash" }
+        );
 
       if (error) {
-        if (error.code === "23505") {
-          return json({ error: "Bu isim için daha önce oy kullandın." }, 409, origin);
-        }
         if (error.code === "23503") {
           return json({ error: "Kayıt bulunamadı." }, 404, origin);
         }
         throw error;
       }
 
-      return json({ ok: true }, 201, origin);
+      return json({ ok: true }, 200, origin);
     }
 
     return json({ error: "Geçersiz işlem." }, 400, origin);
