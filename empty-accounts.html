@@ -13,7 +13,7 @@
     .warning{margin:14px 0 8px;padding:10px 12px;border:1px solid rgba(227,95,88,.46);border-radius:10px;background:rgba(72,18,18,.42);color:#ff7770;text-align:center;font-size:12px;font-weight:850;line-height:1.35;letter-spacing:.01em}.info{margin:0 0 10px;padding:10px 12px;border:1px solid rgba(214,174,92,.22);border-radius:10px;background:#0b0d0f;color:#9da2a8;font-size:10px;line-height:1.45}.info strong{color:#d8c27c}
     .add{display:grid;grid-template-columns:1fr auto;gap:8px;padding:10px;border:1px solid var(--line);border-radius:12px;background:rgba(10,12,14,.96)}.add input{min-width:0;height:44px;border:1px solid rgba(255,255,255,.14);border-radius:8px;background:#06080a;color:#fff;padding:0 12px;font-size:15px;outline:none}.add input:focus{border-color:rgba(212,173,99,.65);box-shadow:0 0 0 2px rgba(212,173,99,.12)}.add button{height:44px;padding:0 15px;border:1px solid #c49949;border-radius:8px;background:linear-gradient(#e2c16c,#a97929);color:#1c150a;font-weight:800}.add button:disabled{opacity:.45}
     .status{min-height:24px;padding:7px 2px 4px;color:#8c9197;font-size:10px;text-align:center}.status.error{color:#e78a82}.status.ok{color:#78cf91}
-    .list{display:grid;gap:8px;margin-top:4px}.row{border:1px solid rgba(214,174,92,.27);border-radius:12px;overflow:hidden;background:rgba(9,11,13,.97)}.row-top{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:11px 12px;border-bottom:1px solid rgba(255,255,255,.055)}.name-wrap{min-width:0;display:flex;align-items:center;gap:7px;flex:1}.name{min-width:0;color:#eee4d2;font-family:Georgia,"Times New Roman",serif;font-size:17px;font-weight:700;overflow-wrap:anywhere}.copy-name{flex:0 0 auto;height:28px;padding:0 8px;border:1px solid rgba(212,173,99,.30);border-radius:7px;background:#0c0f12;color:#d8c27c;font-size:9px;font-weight:800;letter-spacing:.02em}.copy-name:active{transform:translateY(1px);background:#19150e}.copy-name.copied{min-width:42px;color:#8ee7a7;border-color:rgba(74,191,109,.55);background:rgba(24,76,40,.58);font-size:15px}.copy-name:disabled{opacity:1}.date{flex:0 0 auto;color:#5f6469;font-size:8px}
+    .list{display:grid;gap:8px;margin-top:4px}.row{border:1px solid rgba(214,174,92,.27);border-radius:12px;overflow:hidden;background:rgba(9,11,13,.97)}.row-top{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:11px 12px;border-bottom:1px solid rgba(255,255,255,.055)}.name-wrap{min-width:0;display:flex;align-items:center;gap:7px;flex:1}.name{min-width:0;color:#eee4d2;font-family:Georgia,"Times New Roman",serif;font-size:17px;font-weight:700;overflow-wrap:anywhere}.suspicious{flex:0 0 auto;color:#ff8a82;font-size:10px;font-weight:800;letter-spacing:.01em}.copy-name{flex:0 0 auto;height:28px;padding:0 8px;border:1px solid rgba(212,173,99,.30);border-radius:7px;background:#0c0f12;color:#d8c27c;font-size:9px;font-weight:800;letter-spacing:.02em}.copy-name:active{transform:translateY(1px);background:#19150e}.copy-name.copied{min-width:42px;color:#8ee7a7;border-color:rgba(74,191,109,.55);background:rgba(24,76,40,.58);font-size:15px}.copy-name:disabled{opacity:1}.date{flex:0 0 auto;color:#5f6469;font-size:8px}
     .votes{display:grid;grid-template-columns:1fr 1fr;gap:7px;padding:8px}.vote{min-height:47px;border-radius:9px;border:1px solid;display:flex;align-items:center;justify-content:center;gap:7px;font-weight:850;font-size:12px;letter-spacing:.01em}.vote span.count{min-width:26px;padding:3px 7px;border-radius:999px;background:rgba(0,0,0,.22);font-size:11px}.vote.correct{border-color:rgba(74,191,109,.55);background:linear-gradient(180deg,rgba(30,88,48,.8),rgba(18,49,28,.92));color:#96e8ad}.vote.not-empty{border-color:rgba(221,77,72,.55);background:linear-gradient(180deg,rgba(103,31,29,.82),rgba(55,19,18,.94));color:#ffaaa5}.vote:disabled{opacity:.48;filter:saturate(.7)}.vote.mine{box-shadow:inset 0 0 0 2px rgba(255,255,255,.15)}
     .empty{padding:26px 10px;text-align:center;color:#777c82;border:1px dashed rgba(214,174,92,.22);border-radius:12px;font-size:12px}footer{text-align:right;color:#555a60;padding:18px 2px 0;font-family:Georgia,serif;font-size:11px}
     @media(max-width:420px){.shell{padding-left:9px;padding-right:9px}.add{grid-template-columns:1fr}.add button{width:100%}.votes{gap:5px}.vote{font-size:10.5px}.name{font-size:15px}}
@@ -28,7 +28,7 @@
   </header>
 
   <section class="warning">⚠ Lütfen sadece aktif olmayan offline hesapları yazın.</section>
-  <section class="info"><strong>✓ DOĞRU</strong> hesabın boş olduğunu doğrular. <strong style="color:#e7837d">✕ BOŞ DEĞİL!</strong> hesabın boş olmadığını bildirir. Aynı bağlantı/IP aynı isim için yalnızca bir oy verebilir.</section>
+  <section class="info"><strong>✓ DOĞRU</strong> hesabın boş olduğunu doğrular. <strong style="color:#e7837d">✕ BOŞ DEĞİL!</strong> hesabın boş olmadığını bildirir. Aynı bağlantı/IP aynı isim için tek oya sahiptir; tercihini sonradan değiştirebilirsin.</section>
 
   <form id="addForm" class="add">
     <input id="nameInput" maxlength="60" autocomplete="off" placeholder="Listeye oyuncu / hesap adı ekle" aria-label="Hesap adı">
@@ -57,11 +57,12 @@
     if(!entries?.length){ list.innerHTML='<div class="empty">Henüz listeye hesap eklenmemiş.</div>'; return; }
     list.innerHTML=entries.map(e => {
       const mine=e.my_vote||"";
+      const suspicious=Number(e.not_empty_count||0)>=2 ? '<span class="suspicious">(şüpheli)</span>' : '';
       return '<article class="row">'+
-        '<div class="row-top"><div class="name-wrap"><div class="name">'+esc(e.name)+'</div><button type="button" class="copy-name" data-copy="'+esc(e.name)+'">⧉ KOPYALA</button></div><div class="date">'+fmtDate(e.created_at)+'</div></div>'+
+        '<div class="row-top"><div class="name-wrap"><div class="name">'+esc(e.name)+'</div>'+suspicious+'<button type="button" class="copy-name" data-copy="'+esc(e.name)+'">⧉ KOPYALA</button></div><div class="date">'+fmtDate(e.created_at)+'</div></div>'+
         '<div class="votes">'+
-          '<button class="vote correct '+(mine==="correct"?"mine":"")+'" data-id="'+esc(e.id)+'" data-vote="correct" '+(mine?"disabled":"")+'><span>✓ DOĞRU</span><span class="count">'+Number(e.correct_count||0)+'</span></button>'+
-          '<button class="vote not-empty '+(mine==="not_empty"?"mine":"")+'" data-id="'+esc(e.id)+'" data-vote="not_empty" '+(mine?"disabled":"")+'><span>✕ BOŞ DEĞİL!</span><span class="count">'+Number(e.not_empty_count||0)+'</span></button>'+
+          '<button class="vote correct '+(mine==="correct"?"mine":"")+'" data-id="'+esc(e.id)+'" data-vote="correct" aria-pressed="'+(mine==="correct"?"true":"false")+'"><span>✓ DOĞRU</span><span class="count">'+Number(e.correct_count||0)+'</span></button>'+
+          '<button class="vote not-empty '+(mine==="not_empty"?"mine":"")+'" data-id="'+esc(e.id)+'" data-vote="not_empty" aria-pressed="'+(mine==="not_empty"?"true":"false")+'"><span>✕ BOŞ DEĞİL!</span><span class="count">'+Number(e.not_empty_count||0)+'</span></button>'+
         '</div></article>';
     }).join("");
   }
@@ -141,12 +142,17 @@
 
     const btn=e.target.closest("button[data-vote]");
     if(!btn||btn.disabled)return;
-    btn.disabled=true;
+    const row=btn.closest(".row");
+    const voteButtons=[...(row?.querySelectorAll("button[data-vote]")||[])];
+    voteButtons.forEach(b=>b.disabled=true);
     try{
       await request("",{method:"POST",body:JSON.stringify({action:"vote",entry_id:btn.dataset.id,vote:btn.dataset.vote})});
-      setStatus("Oyun kaydedildi.","ok");
+      setStatus("Oyun güncellendi.","ok");
       await load();
-    }catch(err){ setStatus(err.message,"error"); btn.disabled=false; }
+    }catch(err){
+      setStatus(err.message,"error");
+      voteButtons.forEach(b=>b.disabled=false);
+    }
   });
 
   load();
