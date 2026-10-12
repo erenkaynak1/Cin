@@ -19,7 +19,7 @@ function cors(origin: string | null) {
   const allowed = origin && allowedOrigins.has(origin) ? origin : "https://erenkaynak1.github.io";
   return {
     "Access-Control-Allow-Origin": allowed,
-    "Access-Control-Allow-Headers": "content-type",
+    "Access-Control-Allow-Headers": "authorization, content-type",
     "Access-Control-Allow-Methods": "GET,POST,OPTIONS",
     "Vary": "Origin"
   };
