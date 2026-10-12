@@ -43,6 +43,7 @@
 (() => {
   // Supabase Edge Function bağlandığında bu tek adres güncellenecek.
   const API_BASE = window.EMPTY_ACCOUNTS_API || "https://layfxnbzavpxmzisghif.supabase.co/functions/v1/empty-accounts";
+  const API_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImxheWZ4bmJ6YXZweG16aXNnaGlmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTE4MDA0MDMsImV4cCI6MjEwNzM3NjQwM30.b0uD9rnIza3eD4dKkjwqIk44lzbc45kJyjSrOaFsWWo";
   const list = document.getElementById("list");
   const status = document.getElementById("status");
   const form = document.getElementById("addForm");
@@ -69,7 +70,7 @@
 
   async function request(path, options={}){
     if(!API_BASE) throw new Error("Ortak liste sunucusu henüz bağlanmadı.");
-    const res=await fetch(API_BASE+path,{...options,headers:{"Content-Type":"application/json",...(options.headers||{})}});
+    const res=await fetch(API_BASE+path,{...options,headers:{"Content-Type":"application/json","Authorization":"Bearer "+API_ANON_KEY,...(options.headers||{})}});
     const data=await res.json().catch(()=>({}));
     if(!res.ok) throw new Error(data.error||"İşlem başarısız.");
     return data;
