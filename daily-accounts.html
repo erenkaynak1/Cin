@@ -4,7 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
   <meta name="theme-color" content="#07090b">
-  <title>Günlük Liste · HERKES CİN GİBİ</title>
+  <title>Eren Abinin Bu Güzelliği Unutma · HERKES CİN GİBİ</title>
   <style>
     :root{--bg:#07090b;--panel:#111419;--line:rgba(214,174,92,.34);--gold:#d4ad63;--text:#ecebea;--muted:#8d9298;--green:#55c579;--red:#e35f58}
     *{box-sizing:border-box}html{background:#000}body{margin:0;min-height:100%;color:var(--text);font-family:system-ui,-apple-system,Segoe UI,sans-serif;background:radial-gradient(circle at 50% 0,rgba(132,91,43,.17),transparent 28rem),linear-gradient(#111418,#090b0d 36rem,#050607)}
@@ -13,7 +13,7 @@
     .summary{display:flex;align-items:center;justify-content:space-between;gap:10px;margin:14px 0 9px;padding:10px 12px;border:1px solid rgba(214,174,92,.22);border-radius:10px;background:#0b0d0f;color:#969ba0;font-size:11px}.summary strong{color:#d8c27c;font-size:13px}
     .toolbar{display:grid;grid-template-columns:1fr auto;gap:8px}.add{display:grid;grid-template-columns:1fr auto;gap:8px;padding:10px;border:1px solid var(--line);border-radius:12px;background:rgba(10,12,14,.96)}.add input{min-width:0;height:44px;border:1px solid rgba(255,255,255,.14);border-radius:8px;background:#06080a;color:#fff;padding:0 12px;font-size:15px;outline:none}.add input:focus{border-color:rgba(212,173,99,.65);box-shadow:0 0 0 2px rgba(212,173,99,.12)}.add button{height:44px;padding:0 15px;border:1px solid #c49949;border-radius:8px;background:linear-gradient(#e2c16c,#a97929);color:#1c150a;font-weight:800}.reset{min-height:64px;padding:0 13px;border:1px solid rgba(227,95,88,.55);border-radius:12px;background:linear-gradient(180deg,rgba(98,28,27,.88),rgba(54,18,18,.96));color:#ffaaa5;font-weight:850;font-size:11px}.reset:active{transform:translateY(1px)}
     .status{min-height:26px;padding:8px 2px 5px;color:#8c9197;font-size:10px;text-align:center}.status.error{color:#e78a82}.status.ok{color:#78cf91}
-    .list{display:grid;gap:8px}.row{display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:center;gap:10px;padding:10px 11px;border:1px solid rgba(214,174,92,.27);border-radius:12px;background:rgba(9,11,13,.97)}.name{min-width:0;color:#eee4d2;font-family:Georgia,"Times New Roman",serif;font-size:17px;font-weight:700;overflow-wrap:anywhere}.went{min-height:42px;min-width:118px;padding:0 11px;border:1px solid rgba(74,191,109,.55);border-radius:9px;background:linear-gradient(180deg,rgba(30,88,48,.8),rgba(18,49,28,.92));color:#96e8ad;font-weight:850;font-size:11px}.went.active{background:linear-gradient(180deg,rgba(52,138,78,.96),rgba(25,78,42,.98));color:#d7ffe1;box-shadow:inset 0 0 0 2px rgba(255,255,255,.12)}.went:disabled{opacity:.52}.empty{padding:26px 10px;text-align:center;color:#777c82;border:1px dashed rgba(214,174,92,.22);border-radius:12px;font-size:12px}footer{text-align:right;color:#555a60;padding:18px 2px 0;font-family:Georgia,serif;font-size:11px}
+    .list{display:grid;gap:8px}.row{display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:center;gap:10px;padding:10px 11px;border:1px solid rgba(214,174,92,.27);border-radius:12px;background:rgba(9,11,13,.97)}.name{min-width:0;color:#eee4d2;font-family:Georgia,"Times New Roman",serif;font-size:17px;font-weight:700;overflow-wrap:anywhere}.went{min-height:42px;min-width:150px;padding:0 11px;border:1px solid rgba(221,77,72,.55);border-radius:9px;background:linear-gradient(180deg,rgba(103,31,29,.82),rgba(55,19,18,.94));color:#ff8f88;font-weight:850;font-size:10px}.went.active{border-color:rgba(74,191,109,.55);background:linear-gradient(180deg,rgba(52,138,78,.96),rgba(25,78,42,.98));color:#d7ffe1;box-shadow:inset 0 0 0 2px rgba(255,255,255,.12)}.went:disabled{opacity:.52}.empty{padding:26px 10px;text-align:center;color:#777c82;border:1px dashed rgba(214,174,92,.22);border-radius:12px;font-size:12px}footer{text-align:right;color:#555a60;padding:18px 2px 0;font-family:Georgia,serif;font-size:11px}
     @media(max-width:480px){.toolbar{grid-template-columns:1fr}.reset{min-height:43px}.add{grid-template-columns:1fr}.add button{width:100%}.row{gap:7px}.name{font-size:15px}.went{min-width:108px;font-size:10px}}
   </style>
 </head>
@@ -21,7 +21,7 @@
 <main class="shell">
   <header class="head">
     <a class="back" href="index.html" aria-label="Ana ekrana dön">‹</a>
-    <div><h1>GÜNLÜK LİSTE</h1><p class="sub">Bugün gidilen hesapları tek tek işaretle.</p></div>
+    <div><h1>EREN ABİNİN BU GÜZELLİĞİ UNUTMA</h1><p class="sub">Bugünkü yüzlük durumunu tek tek işaretle.</p></div>
     <span></span>
   </header>
 
@@ -71,7 +71,7 @@
       '<article class="row">'+
         '<div class="name">'+esc(e.name)+'</div>'+
         '<button type="button" class="went '+(e.went_today?"active":"")+'" data-id="'+esc(e.id)+'" data-went="'+(e.went_today?"1":"0")+'">'+
-          (e.went_today?'✓ BUGÜN GİTTİM':'BUGÜN GİTTİM')+
+          (e.went_today?'✓ GÜNLÜK YÜZLÜK ATILDI':'HENÜZ YÜZLÜK ATILMADI')+
         '</button>'+
       '</article>'
     ).join("");
@@ -117,17 +117,17 @@
     btn.disabled=true;
     try{
       await request("",{method:"POST",body:JSON.stringify({action:"daily_mark",entry_id:btn.dataset.id,went_today:next})});
-      setStatus(next?"Bugün gittim olarak işaretlendi.":"İşaret kaldırıldı.","ok");
+      setStatus(next?"Günlük yüzlük atıldı.":"Yüzlük işareti kaldırıldı.","ok");
       await load();
     }catch(err){ setStatus(err.message,"error"); btn.disabled=false; }
   });
 
   resetButton.addEventListener("click", async () => {
-    if(!confirm("Bugün Gittim işaretlerinin tamamı kaldırılsın mı?")) return;
+    if(!confirm("Günlük yüzlük işaretlerinin tamamı kaldırılsın mı?")) return;
     resetButton.disabled=true;
     try{
       await request("",{method:"POST",body:JSON.stringify({action:"daily_reset"})});
-      setStatus("Günlük işaretler sıfırlandı.","ok");
+      setStatus("Günlük yüzlük işaretleri sıfırlandı.","ok");
       await load();
     }catch(err){ setStatus(err.message,"error"); }
     finally{ resetButton.disabled=false; }
