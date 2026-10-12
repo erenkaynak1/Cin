@@ -286,3 +286,5 @@ footer{text-align:right;color:#55585d;padding:16px 4px 2px;font-size:11px}
   color:#dff7e4;
   background:linear-gradient(180deg,rgba(34,52,40,.98),rgba(16,27,20,.99));
 }
+
+.sun-link{position:absolute;left:49.9%;top:18.735%;width:5.2%;height:2.93%;border-radius:50%;z-index:6;-webkit-tap-highlight-color:transparent}
