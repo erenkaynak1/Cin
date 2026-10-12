@@ -75,6 +75,17 @@ Deno.serve(async (req: Request) => {
     const hash = await ipHash(req);
 
     if (req.method === "GET") {
+      const mode = new URL(req.url).searchParams.get("mode");
+      if (mode === "daily") {
+        const { data, error } = await supabase
+          .from("daily_accounts")
+          .select("id,name,went_today,went_at,created_at")
+          .order("created_at", { ascending: false });
+
+        if (error) throw error;
+        return json({ entries: data || [] }, 200, origin);
+      }
+
       const { data: rows, error } = await supabase
         .from("empty_account_results")
         .select("id,name,created_at,correct_count,not_empty_count")
@@ -109,6 +120,60 @@ Deno.serve(async (req: Request) => {
     }
 
     const body = await req.json().catch(() => ({}));
+
+    if (body.action === "daily_add") {
+      const name = normalizeName(body.name);
+      if (name.length < 2) {
+        return json({ error: "İsim en az 2 karakter olmalı." }, 400, origin);
+      }
+
+      const { data, error } = await supabase
+        .from("daily_accounts")
+        .insert({ name, name_key: keyFor(name) })
+        .select("id,name,went_today,went_at,created_at")
+        .single();
+
+      if (error) {
+        if (error.code === "23505") {
+          return json({ error: "Bu oyuncu zaten listede aşkım" }, 409, origin);
+        }
+        throw error;
+      }
+
+      return json({ entry: data }, 201, origin);
+    }
+
+    if (body.action === "daily_mark") {
+      const entryId = String(body.entry_id || "");
+      const wentToday = Boolean(body.went_today);
+
+      if (!/^[0-9a-f-]{36}$/i.test(entryId)) {
+        return json({ error: "Geçersiz kayıt." }, 400, origin);
+      }
+
+      const { data, error } = await supabase
+        .from("daily_accounts")
+        .update({
+          went_today: wentToday,
+          went_at: wentToday ? new Date().toISOString() : null
+        })
+        .eq("id", entryId)
+        .select("id,name,went_today,went_at,created_at")
+        .single();
+
+      if (error) throw error;
+      return json({ entry: data }, 200, origin);
+    }
+
+    if (body.action === "daily_reset") {
+      const { error } = await supabase
+        .from("daily_accounts")
+        .update({ went_today: false, went_at: null })
+        .eq("went_today", true);
+
+      if (error) throw error;
+      return json({ ok: true }, 200, origin);
+    }
 
     if (body.action === "add") {
       const name = normalizeName(body.name);
