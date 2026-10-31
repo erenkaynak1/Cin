@@ -288,3 +288,6 @@ footer{text-align:right;color:#55585d;padding:16px 4px 2px;font-size:11px}
 }
 
 .sun-link{position:absolute;left:49.9%;top:18.735%;width:5.2%;height:2.93%;border-radius:50%;z-index:6;-webkit-tap-highlight-color:transparent}
+
+.home-army-inventory{top:95.2%;min-height:4.2%;border-color:rgba(212,173,99,.72);background:linear-gradient(180deg,rgba(63,46,20,.98),rgba(24,18,10,.99));color:#f0d58f}
+.home-army-inventory:active{background:linear-gradient(180deg,rgba(80,58,24,.98),rgba(30,22,12,.99))}
